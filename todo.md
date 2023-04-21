@@ -18,3 +18,4 @@
 - [ ] How do I update the indexer?
 - [ ] How do I match "travel" and "traveler"?
 - [ ] TF-IDF and HTML tags???!!!
+- amoooor
