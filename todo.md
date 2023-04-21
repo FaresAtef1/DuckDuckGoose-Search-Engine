@@ -2,6 +2,7 @@
 
 - [x] Web Crawler (Depth map)
 - [ ] Indexer
+- [x] InvertedFile
 - [ ] Query Processor
 - [ ] Phrase Searching
 - [ ] Ranker
@@ -14,7 +15,6 @@
 - [ ] Crawler state maintenance and interruption
 - [x] Robots.txt??
 - [ ] ![image](https://user-images.githubusercontent.com/96792115/232259981-798292af-dd7a-4458-8a2d-c1351107d89f.png)
-
 - [ ] How do I update the indexer?
 - [ ] How do I match "travel" and "traveler"?
-- [ ] TF-IDF and HTML tags???!!!
+- [x] TF-IDF and HTML tags???!!!
