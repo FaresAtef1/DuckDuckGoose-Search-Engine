@@ -9,11 +9,11 @@ import indexer.*;
 import structures.pair;
 
 class buildInvertedFiles {
-    public static Map<String, Integer> lexicon = new HashMap<String, Integer>();
-    public static Map<Integer, List<pair<String, pair<Integer, String>>>> postings = new HashMap<Integer, List<pair<String, pair<Integer, String>>>>();
+    public static Map<String, Integer> lexicon = new HashMap<>();
+    public static Map<Integer, List<pair<String, pair<Integer, String>>>> postings = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
-        List<String> URLs = new ArrayList<String>();
+        List<String> URLs = new ArrayList<>();
         String s = "https://www.york.ac.uk/teaching/cws/wws/webpage1.html";
         URLs.add(s);
         URLs.add("https://www.geeksforgeeks.org/set-in-java/");
@@ -60,20 +60,20 @@ class buildInvertedFiles {
     }
 
     public static List<pair<Integer, String>> convertTokensToIds(List<pair<String, String>> tokens) {
-        List<pair<Integer, String>> tokensIDs = new ArrayList<pair<Integer, String>>();
+        List<pair<Integer, String>> tokensIDs = new ArrayList<>();
         for (pair<String, String> token : tokens)
         {
             Integer id= lexicon.get(token.first);
             if (id!=null)
             {
-                pair<Integer, String> Pair = new pair<Integer, String>(id, token.second);
+                pair<Integer, String> Pair = new pair<>(id, token.second);
                 tokensIDs.add(Pair);
             }
             else
             {
                 id= lexicon.size();
                 lexicon.put(token.first, id);
-                pair<Integer, String> Pair = new pair<Integer, String>(id, token.second);
+                pair<Integer, String> Pair = new pair<>(id, token.second);
                 tokensIDs.add(Pair);
             }
         }
@@ -81,14 +81,14 @@ class buildInvertedFiles {
     }
 
     public static Map<Integer, pair<Integer, String>> wordCounts(List<pair<Integer, String>> tokenIds) {
-        Map<Integer, pair<Integer, String>> wordCounts = new HashMap<Integer, pair<Integer, String>>(); // wordID, <tf, position>
+        Map<Integer, pair<Integer, String>> wordCounts = new HashMap<>(); // wordID, <tf, position>
         for (pair<Integer, String> id : tokenIds)
         {
             pair<Integer, String> wordData= wordCounts.get(id.first);
             if (wordData!=null)
                 wordData.first = wordData.first + 1;
             else
-                wordData = new pair<Integer, String>(1, id.second);
+                wordData = new pair<>(1, id.second);
             wordCounts.put(id.first, wordData);
         }
         return wordCounts;
@@ -98,7 +98,7 @@ class buildInvertedFiles {
         for (Map.Entry<Integer, pair<Integer, String>> record : wordsCounts.entrySet())
         {
             List<pair<String, pair<Integer, String>>> postingList = postings.get(record.getKey());
-            pair<String, pair<Integer, String>> New_Posting = new pair<String, pair<Integer, String>>(URL, new pair<Integer, String>(record.getValue().first, record.getValue().second));
+            pair<String, pair<Integer, String>> New_Posting = new pair<>(URL, new pair<>(record.getValue().first, record.getValue().second));
             if (postingList!=null)
                 postingList.add(New_Posting);
             else
