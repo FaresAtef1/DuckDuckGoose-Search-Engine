@@ -8,7 +8,7 @@ import org.bson.Document;
 
 public class mongotest {
     public static void main(String[] args) {
-        String uri = "mongodb+srv://fares_atef:faresatef123@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
+        String uri = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
         MongoClientURI mongoClientURI = new MongoClientURI(uri);
         try(MongoClient mongoClient = new MongoClient(mongoClientURI))
         {

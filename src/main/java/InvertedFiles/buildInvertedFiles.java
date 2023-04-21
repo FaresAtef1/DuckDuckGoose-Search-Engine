@@ -1,4 +1,5 @@
 package InvertedFiles;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -8,22 +9,14 @@ import indexer.*;
 import structures.pair;
 
 class buildInvertedFiles {
+    public static Map<String, Integer> lexicon = new HashMap<String, Integer>();
+    public static Map<Integer, List<pair<String, pair<Integer, String>>>> postings = new HashMap<Integer, List<pair<String, pair<Integer, String>>>>();
 
-
-
-    public static   Map<String,Integer> lexicon=new HashMap<String,Integer>();
-    //public static  Map<String,Integer> docsId=new HashMap<String,Integer>();
-    public static   Map<Integer,List<pair<Integer,Integer>>> postings=new HashMap<Integer,List<pair<Integer,Integer>>>();
-    public static void main(String[] args) {
-        // TODO Auto-generated method stub
-
-        List<Document> docSet=new ArrayList<Document>();
-//		long end=0;
-        //docSet.add()
-        try {
-            Document s=Jsoup.connect("https://www.york.ac.uk/teaching/cws/wws/webpage1.html").get();
-            docSet.add(s);
-//			docSet.add(Jsoup.connect("https://www.geeksforgeeks.org/set-in-java/").get());
+    public static void main(String[] args) throws IOException {
+        List<String> URLs = new ArrayList<String>();
+        String s = "https://www.york.ac.uk/teaching/cws/wws/webpage1.html";
+        URLs.add(s);
+        URLs.add("https://www.geeksforgeeks.org/set-in-java/");
 //			docSet.add(Jsoup.connect("https://openjfx.io/openjfx-docs/#introduction").get());
 //			docSet.add(Jsoup.connect("https://www.geeksforgeeks.org/using-underscore-in-numeric-literals-in-java/?ref=lbp").get());
 //			docSet.add(Jsoup.connect("https://library.umbc.edu/").get());
@@ -45,123 +38,75 @@ class buildInvertedFiles {
 //			docSet.add(Jsoup.connect("https://gritstarter.umbc.edu").get());
 //			docSet.add(Jsoup.connect("https://www.alumni.umbc.edu/").get());
 
-//
-
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        int docId=0;
-        long f=System.currentTimeMillis();
-        for(Document D:docSet)
+        for (String ss : URLs)
         {
-//			long start=System.currentTimeMillis();
-
-            List<pair<String,String>> tokens=indexer.Normalize(D);
-            List<Integer> tokensIds=convertTokensToIds(tokens);
-            Map<Integer,Integer> WordsCounts=wordCounts(tokensIds);
-            addToPostings(docId,WordsCounts);
-            docId++;
-//			end=System.currentTimeMillis();
-//			System.out.println("finished : "+(end-start));
+            Document temp = Jsoup.connect(ss).get();
+            List<pair<String, String>> tokens = indexer.Normalize(temp); // String, position
+            List<pair<Integer, String>> tokensIds = convertTokensToIds(tokens);
+            Map<Integer, pair<Integer, String>> WordsCounts = wordCounts(tokensIds);
+            addToPostings(ss, WordsCounts);
         }
-        int i=0;
 
-        for(Map.Entry<String,Integer> word: lexicon.entrySet())
+        int i = 0;
+        for (Map.Entry<String, Integer> word : lexicon.entrySet())
         {
-            System.out.print(i+"."+word.getKey()+" : ");
-
-            List<pair<Integer,Integer>> postingsList=postings.get(word.getValue());
-
-            for(pair<Integer,Integer> p:postingsList)
-            {
-                System.out.print("{docID : "+p.first+" tf : "+p.second+"}" );
-            }
+            System.out.print(i + "." + word.getKey() + " : ");
+            List<pair<String, pair<Integer, String>>> postingsList = postings.get(word.getValue());
+            for (pair<String, pair<Integer, String>> p : postingsList)
+                System.out.print("{DocURL : " + p.first + " , tf : " + p.second.first + " , position : " + p.second.second + "}");
             System.out.println();
             i++;
         }
-
-        long s=System.currentTimeMillis();
-        System.out.println("total : "+(s-f));
-        System.out.println("no of words : "+lexicon.size());
-        System.out.println("no of postingsList : "+postings.size());
-        System.out.println("no of docs : "+docSet.size());
-
-//		 i=0;
-//		for(Map.Entry<String,Integer> word: lexicon.entrySet())
-//		{
-//			System.out.println(i+"."+word.getKey()+" ");
-//			i++;
-//		}
-//		int id=lexicon.get("mobile");
-//
-//		List<pair> postingList=postings.get(id);
-//		for(pair e: postingList)
-//		{
-//			System.out.print("{docID : "+e.first+" tf : "+e.second+"}" );
-//		}
-//
     }
 
-    public static List<Integer>  convertTokensToIds(List<pair<String,String>> tokens)
-    {
-        List<Integer> tokensIDs=new ArrayList<Integer>();
-        for( pair<String,String> token:tokens)
+    public static List<pair<Integer, String>> convertTokensToIds(List<pair<String, String>> tokens) {
+        List<pair<Integer, String>> tokensIDs = new ArrayList<pair<Integer, String>>();
+        for (pair<String, String> token : tokens)
         {
-            if(lexicon.containsKey(token.first))
+            Integer id= lexicon.get(token.first);
+            if (id!=null)
             {
-                tokensIDs.add(lexicon.get(token.first));
+                pair<Integer, String> Pair = new pair<Integer, String>(id, token.second);
+                tokensIDs.add(Pair);
             }
             else
             {
-                int id=lexicon.size();
+                id= lexicon.size();
                 lexicon.put(token.first, id);
-                tokensIDs.add(id);
+                pair<Integer, String> Pair = new pair<Integer, String>(id, token.second);
+                tokensIDs.add(Pair);
             }
         }
         return tokensIDs;
     }
-    public static Map<Integer,Integer> wordCounts(List<Integer> tokenIds)
-    {
-        Map<Integer,Integer> wordCounts=new HashMap<Integer,Integer>();
 
-        for(Integer id:tokenIds)
+    public static Map<Integer, pair<Integer, String>> wordCounts(List<pair<Integer, String>> tokenIds) {
+        Map<Integer, pair<Integer, String>> wordCounts = new HashMap<Integer, pair<Integer, String>>(); // wordID, <tf, position>
+        for (pair<Integer, String> id : tokenIds)
         {
-            if(wordCounts.containsKey(id))
-            {
-                int newCount=wordCounts.get(id)+1;
-                wordCounts.put(id, newCount);
-            }
+            pair<Integer, String> wordData= wordCounts.get(id.first);
+            if (wordData!=null)
+                wordData.first = wordData.first + 1;
             else
-            {
-                wordCounts.put(id, 1);
-            }
+                wordData = new pair<Integer, String>(1, id.second);
+            wordCounts.put(id.first, wordData);
         }
-
-
         return wordCounts;
     }
 
-    public static void addToPostings(int docID,Map<Integer,Integer> wordsCounts)
-    {
-        for(Map.Entry<Integer,Integer> record: wordsCounts.entrySet())
-            if(postings.containsKey(record.getKey()))
-            {
-                List<pair<Integer,Integer>> postinglist=postings.get(record.getKey());
-                pair<Integer,Integer> newposting=new pair<Integer,Integer>(docID,record.getValue());
-                postinglist.add(newposting);
-                //postings.put(record.getKey(),postinglist);
-            }
+    public static void addToPostings(String URL, Map<Integer, pair<Integer, String>> wordsCounts) {
+        for (Map.Entry<Integer, pair<Integer, String>> record : wordsCounts.entrySet())
+        {
+            List<pair<String, pair<Integer, String>>> postingList = postings.get(record.getKey());
+            pair<String, pair<Integer, String>> New_Posting = new pair<String, pair<Integer, String>>(URL, new pair<Integer, String>(record.getValue().first, record.getValue().second));
+            if (postingList!=null)
+                postingList.add(New_Posting);
             else
             {
-                List<pair<Integer,Integer>> postingList=new ArrayList<>();
-                pair<Integer,Integer> newposting=new pair<Integer,Integer>(docID,record.getValue());
-                postingList.add(newposting);
+                postingList = new ArrayList<>();
+                postingList.add(New_Posting);
                 postings.put(record.getKey(), postingList);
             }
+        }
     }
-
-
 }
-
