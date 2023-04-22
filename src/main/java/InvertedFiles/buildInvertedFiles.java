@@ -58,14 +58,14 @@ class buildInvertedFiles {
             System.out.print(i + "." + word.getKey() + " : ");
             List<pair<String, pair<Integer, String>>> postingsList = postings.get(word.getValue());
             org.bson.Document query = new org.bson.Document("Word", word.getKey());
-            List<org.bson.Document> postingsListOfeachWord = new ArrayList<>();
+            List<org.bson.Document> postingsListOfEachWord = new ArrayList<>();
             for (pair<String, pair<Integer, String>> p : postingsList)
             {
                 org.bson.Document temp = new org.bson.Document("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second);
                 System.out.print("{DocURL : " + p.first + " , tf : " + p.second.first + " , position : " + p.second.second + "}");
-                postingsListOfeachWord.add(temp);
+                postingsListOfEachWord.add(temp);
             }
-            query.append("postings", postingsListOfeachWord);
+            query.append("postings", postingsListOfEachWord);
             Documents.add(query);
             System.out.println();
             i++;

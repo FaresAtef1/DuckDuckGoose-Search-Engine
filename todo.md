@@ -1,7 +1,7 @@
 # To-Do List
 
 - [x] Web Crawler (Depth map)
-- [ ] Indexer
+- [x] Indexer
 - [x] InvertedFile
 - [ ] Query Processor
 - [ ] Phrase Searching
