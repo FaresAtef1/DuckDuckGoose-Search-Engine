@@ -1311,23 +1311,17 @@ public class englishStemmer extends SnowballStemmer {
     public boolean equals( Object o ) {
         return o instanceof englishStemmer;
     }
-
     public int hashCode() {
         return englishStemmer.class.getName().hashCode();
     }
     public void StemmAll(String[] words)
     {
-
         for(int i=0;i<words.length;i++)
         {
             this.setCurrent(words[i]);
             this.stem();
             words[i]=this.getCurrent();
         }
-
     }
-
-
-
 }
 

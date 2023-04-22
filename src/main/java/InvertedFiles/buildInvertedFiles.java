@@ -1,5 +1,9 @@
 package InvertedFiles;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -47,15 +51,31 @@ class buildInvertedFiles {
             addToPostings(ss, WordsCounts);
         }
 
+        List<org.bson.Document> Documents = new ArrayList<>(); // DataBase
         int i = 0;
         for (Map.Entry<String, Integer> word : lexicon.entrySet())
         {
             System.out.print(i + "." + word.getKey() + " : ");
             List<pair<String, pair<Integer, String>>> postingsList = postings.get(word.getValue());
+            //List<String>
             for (pair<String, pair<Integer, String>> p : postingsList)
+            {
                 System.out.print("{DocURL : " + p.first + " , tf : " + p.second.first + " , position : " + p.second.second + "}");
+                org.bson.Document query = new org.bson.Document("Word", word.getKey()).append("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second);
+                Documents.add(query);
+            }
             System.out.println();
             i++;
+        }
+        // DataBase
+        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
+        MongoClientURI mongoClientURI = new MongoClientURI(URL);
+        try(MongoClient mongoClient = new MongoClient(mongoClientURI))
+        {
+            MongoDatabase database = mongoClient.getDatabase("myFirstDatabase");
+            MongoCollection<org.bson.Document> collection = database.getCollection("Indexer");
+            collection.drop();
+            collection.insertMany(Documents);
         }
     }
 
