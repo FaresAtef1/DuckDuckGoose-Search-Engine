@@ -11,6 +11,7 @@
 - [ ] PDF file containing algorithms
 - [ ] Stem the whole document or just the search query?
 - [ ] When do i crawl?
+- [ ] how can the crawler be interrupted
 - [ ] What do you mean by the order of page visits?
 - [ ] Crawler state maintenance and interruption
 - [x] Robots.txt??
