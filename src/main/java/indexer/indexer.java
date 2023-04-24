@@ -16,6 +16,10 @@ public class indexer {
     private static final englishStemmer stemmer = new englishStemmer();
     private static final StopWordsRemover SWRemover= new StopWordsRemover("StopWords.txt");
 
+    // for Query Processing
+    private static final englishStemmer stemmer2 = new englishStemmer();
+    private static final StopWordsRemover SWRemover2= new StopWordsRemover("StopWords.txt");
+
     public static void main (String[]args)
     {}
 
@@ -49,5 +53,21 @@ public class indexer {
                 tokens.add(new pair<>(word, e.tagName()));
             }
         }
+    }
+
+    public static List <String> Query_Processing(String Query){
+        String Text=Query;
+        List<String> Out = new LinkedList<>();
+        Text=Text.toLowerCase();
+        Text=DocumentCleaner.RemoveSpecialCharacters(Text);
+        Text=SWRemover2.RemoveStopWords(Text);
+        for(String word: Text.split("\\s+"))
+        {
+            stemmer2.setCurrent(word);
+            stemmer2.stem();
+            word=stemmer2.getCurrent();
+            Out.add(word);
+        }
+        return Out;
     }
 }
