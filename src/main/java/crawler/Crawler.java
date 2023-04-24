@@ -18,27 +18,19 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
-
-
 public class Crawler implements Runnable{
     private String BaseURL;  // it is not used
     private AtomicInteger CrawledNum; // Thread-safe counter
     private ConcurrentLinkedQueue<String> URLsToCrawl;
-    private Set<String> VisitedURLs;
-    private ConcurrentHashMap<String, Integer> DepthMap;
+    public Set<String> VisitedURLs; // global for indexer
     protected ConcurrentHashMap<String, Boolean> DisallowedURLs;
 
     public Crawler(String BaseUrl) {
         CrawledNum=new AtomicInteger(0);
         this.BaseURL = BaseUrl;
         URLsToCrawl = new ConcurrentLinkedQueue<>();
-        VisitedURLs = Collections.synchronizedSet(new HashSet<String>());  // to ensure that the visitedUrls HashSet is thread-safe
-        DepthMap= new ConcurrentHashMap <>();
+        VisitedURLs = Collections.synchronizedSet(new HashSet<>());  // to ensure that the visitedUrls HashSet is thread-safe
         DisallowedURLs=new ConcurrentHashMap <>();
-        DepthMap.put(BaseURL,1);
         URLsToCrawl.add(BaseUrl);
     }
 
@@ -54,26 +46,19 @@ public class Crawler implements Runnable{
                 try
                 {
                     Document doc = Jsoup.connect(head).get();
-
-                    if (doc == null)
-                        continue;
-                    GlobalData.VisitedDocs.add(doc);
                     Elements links = doc.select("a[href]");
                     for(Element link:links)
                     {
-
-                        String LinkURL = link.absUrl("href"); // link contains the relative URL but abs gets the complete URL
-                        if(LinkURL==null)
-                            continue;
-                        RobotsTxtChecker checkrobot=new RobotsTxtChecker(LinkURL);
+                        String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
+                        URL URLObj = new URL(LinkURL);
+                        String CompactURL = URLObj.getProtocol() + "://" + URLObj.getHost() + URLObj.getPath();
+                        RobotsTxtChecker checkrobot=new RobotsTxtChecker(CompactURL);
                         checkrobot.Generate();
-                        if(CrawledNum.get()<6000&&!VisitedURLs.contains(LinkURL)&&LinkURL.startsWith("http")&&(DisallowedURLs.get(LinkURL)==null||!DisallowedURLs.get(LinkURL)))
+                        if(CrawledNum.get()<6000&&CompactURL.startsWith("http")&&!VisitedURLs.contains(CompactURL)&&(DisallowedURLs.get(CompactURL)==null||!DisallowedURLs.get(CompactURL))) // we may need this &&CompactURL.startsWith("http")
                         {
                             CrawledNum.incrementAndGet();
-                            int currdepth=DepthMap.get(head);
-                            DepthMap.put(LinkURL,currdepth+1);
-                            System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+LinkURL);
-                            URLsToCrawl.add(LinkURL);
+                            System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+CompactURL);
+                            URLsToCrawl.add(CompactURL);
                         }
                     }
                 }
@@ -81,11 +66,6 @@ public class Crawler implements Runnable{
                 {}
             }
         }
-    }
-
-
-    public class GlobalData {
-        public static Set<Document> VisitedDocs=Collections.synchronizedSet(new HashSet<Document>()); ;
     }
 
 
@@ -125,17 +105,15 @@ public class Crawler implements Runnable{
 
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.york.ac.uk/teaching/cws/wws/webpage1.html");
-        Thread[] threads = new Thread[5];
+        Thread[] threads = new Thread[8];
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 8; i++)
         {
             threads[i] = new Thread(crawler);
             threads[i].setName(String.valueOf(i));
             threads[i].start();
         }
-        for(int i=0;i<5;i++)
+        for(int i=0;i<8;i++)
             threads[i].join();
-
-
     }
 }
