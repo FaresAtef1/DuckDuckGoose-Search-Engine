@@ -15,6 +15,7 @@
 - [ ] Crawler state maintenance and interruption
 - [x] Robots.txt??
 - [ ] ![image](https://user-images.githubusercontent.com/96792115/232259981-798292af-dd7a-4458-8a2d-c1351107d89f.png)
+- [ ] which User-agents should be considered 
 - [ ] How do I update the indexer?
 - [ ] How do I match "travel" and "traveler"?
 - [ ] TF-IDF
