@@ -21,6 +21,7 @@ class buildInvertedFiles {
         String s = "https://www.york.ac.uk/teaching/cws/wws/webpage1.html";
         URLs.add(s);
         URLs.add("https://www.geeksforgeeks.org/set-in-java/");
+        URLs.add("https://facebook.com/");
 //			docSet.add(Jsoup.connect("https://openjfx.io/openjfx-docs/#introduction").get());
 //			docSet.add(Jsoup.connect("https://www.geeksforgeeks.org/using-underscore-in-numeric-literals-in-java/?ref=lbp").get());
 //			docSet.add(Jsoup.connect("https://library.umbc.edu/").get());

@@ -14,14 +14,19 @@ import structures.pair;
 public class indexer {
 
     private static final englishStemmer stemmer = new englishStemmer();
-    private static final StopWordsRemover SWRemover= new StopWordsRemover("StopWords.txt");
+    private static final StopWordsRemover SWRemover = new StopWordsRemover("StopWords.txt");
 
-    // for Query Processing
-    private static final englishStemmer stemmer2 = new englishStemmer();
-    private static final StopWordsRemover SWRemover2= new StopWordsRemover("StopWords.txt");
 
-    public static void main (String[]args)
-    {}
+    public static void main(String[] args) {
+    }
+
+    private static String Clean(String Text)
+    {
+        Text=Text.toLowerCase();
+        Text=DocumentCleaner.RemoveSpecialCharacters(Text);
+        Text=SWRemover.RemoveStopWords(Text);
+        return  Text;
+    }
 
     public static List<pair<String,String>> Normalize(Document doc)
     {
@@ -37,20 +42,22 @@ public class indexer {
         return tokens;
     }
 
+
     public static void Tokenize (Elements elementsToRemove,List<pair<String,String>> tokens){
         String Text;
         for (Element e : elementsToRemove)
         {
             Text=e.text();
-            Text=Text.toLowerCase();
-            Text=DocumentCleaner.RemoveSpecialCharacters(Text);
-            Text=SWRemover.RemoveStopWords(Text);
+            Text=Clean(Text);
             for(String word: Text.split("\\s+"))
             {
+                if (!word.matches("[a-z0-9]+"))
+                    continue;
                 stemmer.setCurrent(word);
                 stemmer.stem();
                 word=stemmer.getCurrent();
                 tokens.add(new pair<>(word, e.tagName()));
+
             }
         }
     }
@@ -58,14 +65,14 @@ public class indexer {
     public static List <String> Query_Processing(String Query){
         String Text=Query;
         List<String> Out = new LinkedList<>();
-        Text=Text.toLowerCase();
-        Text=DocumentCleaner.RemoveSpecialCharacters(Text);
-        Text=SWRemover2.RemoveStopWords(Text);
+        Text=Clean(Text);
         for(String word: Text.split("\\s+"))
         {
-            stemmer2.setCurrent(word);
-            stemmer2.stem();
-            word=stemmer2.getCurrent();
+            if (!word.matches("[a-z0-9]+"))
+                continue;
+            stemmer.setCurrent(word);
+            stemmer.stem();
+            word=stemmer.getCurrent();
             Out.add(word);
         }
         return Out;

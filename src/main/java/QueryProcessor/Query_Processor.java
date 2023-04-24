@@ -16,8 +16,11 @@ public class Query_Processor {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         List<String> words = indexer.Query_Processing(input);
+        if(words.isEmpty())
+            return;
         List<Document> queries = new ArrayList<>();
-        for (String word : words) queries.add(new Document("Word", word));
+        for (String word : words)
+            queries.add(new Document("Word", word));
         Document query = new Document("$or", queries); // Combine queries with logical OR
         String url = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
         MongoClientURI mongoClientURI = new MongoClientURI(url);
@@ -29,5 +32,6 @@ public class Query_Processor {
             for (Document document : collection.find(query).projection(projection))
                 System.out.println(document.toJson());
         }
+        scanner.close();
     }
 }
