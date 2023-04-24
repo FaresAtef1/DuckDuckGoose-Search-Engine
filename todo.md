@@ -3,7 +3,7 @@
 - [x] Web Crawler (Depth map)
 - [x] Indexer
 - [x] InvertedFile
-- [ ] Query Processor
+- [x] Query Processor
 - [ ] Phrase Searching
 - [ ] Ranker
 - [ ] Web Interface
