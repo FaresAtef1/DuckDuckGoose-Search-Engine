@@ -4,7 +4,7 @@
 - [x] Indexer
 - [x] InvertedFile
 - [x] Query Processor
-- [ ] Phrase Searching
+- [x] Phrase Searching
 - [ ] Ranker
 - [ ] Web Interface
 - [ ] Bonus

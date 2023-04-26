@@ -7,5 +7,3 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 
 # 📌Prerequisites
-
-Download and install jsoup, you can follow this https://jsoup.org/download.

@@ -28,9 +28,10 @@ public class Query_Processor {
         {
             MongoDatabase database = mongoClient.getDatabase("myFirstDatabase");
             MongoCollection<Document> collection = database.getCollection("Indexer");
-            Document projection = new Document("postings.DocURL", 1).append("_id", 0);
-            for (Document document : collection.find(query).projection(projection))
-                System.out.println(document.toJson());
+            List<String> distinctValues = new ArrayList<>();
+            collection.distinct("postings.DocURL",query, String.class).into(distinctValues);
+            for (String value : distinctValues)
+                System.out.println(value);
         }
         scanner.close();
     }
