@@ -9,14 +9,14 @@
 - [ ] Web Interface
 - [ ] Bonus
 - [ ] PDF file containing algorithms
-- [ ] Stem the whole document or just the search query?
-- [ ] When do i crawl?
-- [ ] how can the crawler be interrupted
-- [ ] What do you mean by the order of page visits?
+- [x] Stem the whole document or just the search query?
+- [x] When do i crawl?
+- [x] how can the crawler be interrupted
+- [x] What do you mean by the order of page visits?
 - [ ] Crawler state maintenance and interruption
 - [x] Robots.txt??
 - [ ] ![image](https://user-images.githubusercontent.com/96792115/232259981-798292af-dd7a-4458-8a2d-c1351107d89f.png)
-- [ ] which User-agents should be considered 
+- [x] which User-agents should be considered 
 - [ ] How do I update the indexer?
 - [ ] How do I match "travel" and "traveler"?
 - [ ] TF-IDF
