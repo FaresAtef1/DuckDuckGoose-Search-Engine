@@ -16,12 +16,20 @@ class buildInvertedFiles {
     public static Map<String, Integer> lexicon = new HashMap<>();
     public static Map<Integer, List<pair<String, pair<Integer, String>>>> postings = new HashMap<>();
 
+    public static Map<String , Set<String>>  stem= new HashMap<>();
+
+
     public static void main(String[] args) throws IOException {
         List<String> URLs = new ArrayList<>();
         String s = "https://www.york.ac.uk/teaching/cws/wws/webpage1.html";
         URLs.add(s);
         URLs.add("https://www.geeksforgeeks.org/set-in-java/");
         URLs.add("https://facebook.com/");
+        URLs.add("https://www.learnthat.org/pages/view/suffix.html");
+        URLs.add("https://en.wikipedia.org/wiki/Word_stem");
+        URLs.add("https://medium.com/@tusharsri/nlp-a-quick-guide-to-stemming-60f1ca5db49e");
+
+
 //			docSet.add(Jsoup.connect("https://openjfx.io/openjfx-docs/#introduction").get());
 //			docSet.add(Jsoup.connect("https://www.geeksforgeeks.org/using-underscore-in-numeric-literals-in-java/?ref=lbp").get());
 //			docSet.add(Jsoup.connect("https://library.umbc.edu/").get());
@@ -54,22 +62,44 @@ class buildInvertedFiles {
 
         List<org.bson.Document> Documents = new ArrayList<>(); // DataBase
         int i = 0;
-        for (Map.Entry<String, Integer> word : lexicon.entrySet())
+//        for (Map.Entry<String, Integer> word : lexicon.entrySet())
+//        {
+//            System.out.print(i + "." + word.getKey() + " : ");
+//            List<pair<String, pair<Integer, String>>> postingsList = postings.get(word.getValue());
+//            org.bson.Document query = new org.bson.Document("Word", word.getKey());
+//            List<org.bson.Document> postingsListOfEachWord = new ArrayList<>();
+//            for (pair<String, pair<Integer, String>> p : postingsList)
+//            {
+//                org.bson.Document temp = new org.bson.Document("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second);
+//                System.out.print("{DocURL : " + p.first + " , tf : " + p.second.first + " , position : " + p.second.second + "}");
+//                postingsListOfEachWord.add(temp);
+//            }
+//            query.append("postings", postingsListOfEachWord);
+//            Documents.add(query);
+//            System.out.println();
+//            i++;
+//        }
+
+        for (Map.Entry<String, Set<String>> stemmedWord : stem.entrySet()) //for each stemmed word
         {
-            System.out.print(i + "." + word.getKey() + " : ");
-            List<pair<String, pair<Integer, String>>> postingsList = postings.get(word.getValue());
-            org.bson.Document query = new org.bson.Document("Word", word.getKey());
+            org.bson.Document query = new org.bson.Document("stemmedWord", stemmedWord.getKey());
             List<org.bson.Document> postingsListOfEachWord = new ArrayList<>();
-            for (pair<String, pair<Integer, String>> p : postingsList)
+            for(String word : stemmedWord.getValue()) //for each actual word
             {
-                org.bson.Document temp = new org.bson.Document("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second);
-                System.out.print("{DocURL : " + p.first + " , tf : " + p.second.first + " , position : " + p.second.second + "}");
+                int id = lexicon.get(word);
+                List<pair<String, pair<Integer, String>>> postingsList = postings.get(id); // the posting of each actual word
+                List<org.bson.Document> postingsListOfEachActualWord = new ArrayList<>();
+                for(pair<String, pair<Integer, String>> p : postingsList)//for each posting
+                {
+                    org.bson.Document temp = new org.bson.Document("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second); // the posting of each actual word
+                    postingsListOfEachActualWord.add(temp);
+                }
+                org.bson.Document temp = new org.bson.Document("actualWord", word).append("postings", postingsListOfEachActualWord);
                 postingsListOfEachWord.add(temp);
+
             }
             query.append("postings", postingsListOfEachWord);
             Documents.add(query);
-            System.out.println();
-            i++;
         }
         // DataBase
         String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
@@ -100,6 +130,17 @@ class buildInvertedFiles {
                 pair<Integer, String> Pair = new pair<>(id, token.second);
                 tokensIDs.add(Pair);
             }
+            String stemWord= indexer.Stem(token.first);
+            Set words=stem.get(stemWord);
+            if(words==null)
+            {
+                words=new HashSet();
+                words.add(token.first);
+                stem.put(stemWord, words);
+            }
+            else
+                words.add(token.first);
+
         }
         return tokensIDs;
     }
