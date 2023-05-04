@@ -42,6 +42,14 @@ public class indexer {
         return tokens;
     }
 
+    public static String Stem(String word)
+    {
+        stemmer.setCurrent(word);
+        stemmer.stem();
+        word=stemmer.getCurrent();
+        return word;
+    }
+
 
     public static void Tokenize (Elements elementsToRemove,List<pair<String,String>> tokens){
         String Text;
@@ -53,11 +61,7 @@ public class indexer {
             {
                 if (!word.matches("[a-z0-9]+"))
                     continue;
-                stemmer.setCurrent(word);
-                stemmer.stem();
-                word=stemmer.getCurrent();
                 tokens.add(new pair<>(word, e.tagName()));
-
             }
         }
     }
@@ -70,9 +74,6 @@ public class indexer {
         {
             if (!word.matches("[a-z0-9]+"))
                 continue;
-            stemmer.setCurrent(word);
-            stemmer.stem();
-            word=stemmer.getCurrent();
             Out.add(word);
         }
         return Out;
