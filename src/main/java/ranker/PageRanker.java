@@ -1,7 +1,13 @@
 package ranker;
 
-import java.util.HashMap;
-import java.util.Set;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PageRanker {
 
@@ -15,14 +21,17 @@ public class PageRanker {
     private static final double threshold = 0.0001;
 
 
-    public PageRanker(HashMap<String, Set<String>> inLinks, HashMap<String, Set<String>> outLinks) {
-        this.inLinks = inLinks;
-        this.outLinks = outLinks;
+    public PageRanker(HashMap<String, Set<String>> inwardLinks, HashMap<String, Set<String>> outwardLinks) {
+        inLinks= new HashMap<String,Set<String>>();
+        outLinks = outwardLinks;
         // Making sure that only crawled pages are considered
-        for (String key : inLinks.keySet()) {
-            if (!outLinks.containsKey(key))
-                inLinks.remove(key);
-        }
+        System.out.println("inLinks size: " + inwardLinks.size());
+        System.out.println("outLinks size: " + outwardLinks.size());
+        for (String key : outLinks.keySet()) {
+            inLinks.put(key, inwardLinks.get(key));
+       }
+        System.out.println("inLinks size: " + inLinks.size());
+        System.out.println("outLinks size: " + outLinks.size());
         PageRankScores = new HashMap<>();
         for (String key : inLinks.keySet())
             PageRankScores.put(key, 1.0 / inLinks.size());
@@ -68,6 +77,23 @@ public class PageRanker {
 
     public HashMap<String, Double> getPageRankScores() {
         return PageRankScores;
+    }
+
+    public void IndexPageRankScores() {
+        List<org.bson.Document> documents= new ArrayList<>();
+        for(Map.Entry<String, Double> entry : PageRankScores.entrySet())
+        {
+            documents.add(new org.bson.Document("DocURL",entry.getKey()).append("PageRankScore",entry.getValue()));
+        }
+        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
+        MongoClientURI mongoClientURI = new MongoClientURI(URL);
+        try(MongoClient mongoClient = new MongoClient(mongoClientURI))
+        {
+            MongoDatabase database = mongoClient.getDatabase("myFirstDatabase");
+            MongoCollection<Document> collection = database.getCollection("PageRankScores");
+            collection.drop();
+            collection.insertMany(documents);
+        }
     }
 }
 
