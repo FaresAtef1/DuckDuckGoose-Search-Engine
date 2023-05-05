@@ -37,9 +37,11 @@ public class Crawler implements Runnable{
         URLsToCrawl = new ConcurrentLinkedQueue<>();
         DisallowedURLs=new ConcurrentLinkedQueue <>();
         inLinks =new ConcurrentHashMap <>();
+        outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
         URLsToCrawl.add("https://www.example.com/");
         URLsToCrawl.add("https://www.example.com/index.html");
+
         //URLsToCrawl.add(BaseUrl);
     }
 

@@ -6,6 +6,8 @@ public class RelevanceCalculator {
 
     private HashMap<String,Double> TFScores;
     private HashMap<String,Double> IDFScores;
-    public RelevanceCalculator(){}
+    public RelevanceCalculator(){
+
+    }
     //  i guess need to return postings from the query processor
 }
