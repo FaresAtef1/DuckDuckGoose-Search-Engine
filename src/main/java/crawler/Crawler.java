@@ -2,6 +2,8 @@ package crawler;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +25,9 @@ public class Crawler implements Runnable{
     private String BaseURL;  // it is not used
     private AtomicInteger CrawledNum; // Thread-safe counter
     private ConcurrentLinkedQueue<String> URLsToCrawl;
-    private ConcurrentHashMap<String,Integer> VisitedURLsCount;
+    private ConcurrentHashMap<String, Set<String>> inLinks;
+
+    private ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
 
@@ -32,7 +36,7 @@ public class Crawler implements Runnable{
         this.BaseURL = BaseUrl;
         URLsToCrawl = new ConcurrentLinkedQueue<>();
         DisallowedURLs=new ConcurrentLinkedQueue <>();
-        VisitedURLsCount =new ConcurrentHashMap <>();
+        inLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
         URLsToCrawl.add("https://www.example.com/");
         URLsToCrawl.add("https://www.example.com/index.html");
@@ -46,6 +50,7 @@ public class Crawler implements Runnable{
             if(head!=null)
             {
                 //VisitedURLs.put(head,1);
+                outLinks.put(head,new HashSet<>());
                 try
                 {
                     Document doc = Jsoup.connect(head).get();
@@ -55,33 +60,50 @@ public class Crawler implements Runnable{
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
                         String HashedURL=VisitedURLsContentHash.get(hash); // the URL that has the same hash
+                        //Modified
+                        if(outLinks.get(head)!=null)
+                            outLinks.get(head).add(HashedURL);
+                        else
+                        {
+                            Set<String> tempSet = new HashSet<>();
+                            tempSet.add(HashedURL);
+                            outLinks.put(head, tempSet);
+                        }
                         if(HashedURL!=null) // there exists a URL that has this content (or we are trying to crawl a visited URL), I don't need to crawl this URL
                         {
                             System.out.println("here");
                             System.out.println(HashedURL);
-                            if(VisitedURLsCount.get(HashedURL)!=null) // true if the URL was visited before
-                                VisitedURLsCount.put(HashedURL, VisitedURLsCount.get(HashedURL)+1);
-                            else // if the URL was not visited before (new URL but has the same content of another visited URL)
-                                VisitedURLsCount.put(HashedURL,1);
+                            if(inLinks.get(HashedURL)!=null)
+                                inLinks.get(HashedURL).add(head);
+                            else {// if the URL was a seed
+                                Set<String> tempSet = new HashSet<>();
+                                tempSet.add(head);
+                                inLinks.put(HashedURL, tempSet);
+                            }
                             continue;
                         }
                         RobotsTxtChecker checkrobot=new RobotsTxtChecker(LinkURL);
                         checkrobot.Generate();
-                        if(CrawledNum.get()<6000&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
+                        if(CrawledNum.get()<5999&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
                         {
+                            //potential critical section!!!!!
                             VisitedURLsContentHash.put(hash,LinkURL);
-                            if(VisitedURLsCount.get(LinkURL)!=null) // this may happen if the content of the URL has changed
+                            if(inLinks.get(LinkURL)!=null) // this may happen if the content of the URL has changed
                             {
                                 // here we need to update the database
-                                VisitedURLsCount.put(LinkURL, VisitedURLsCount.get(LinkURL)+1);
-                                System.out.println(VisitedURLsCount.get(LinkURL));
+                                inLinks.get(LinkURL).add(head);
+                                System.out.println(inLinks.get(LinkURL));
                                 System.out.println("was visited before "+Thread.currentThread().getName()+"  "+LinkURL);
                                 //continue;
                             }
                             else
-                                VisitedURLsCount.put(LinkURL,1);
+                            {
+                                Set<String> tempSet = new HashSet<>();
+                                tempSet.add(head);
+                                inLinks.put(LinkURL, tempSet);
+                            }
                             CrawledNum.incrementAndGet();
-                            System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+LinkURL+" "+ VisitedURLsCount.get(LinkURL));
+                            System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+LinkURL+" "+ inLinks.get(LinkURL));
                             URLsToCrawl.add(LinkURL);
                         }
                     }
@@ -90,6 +112,11 @@ public class Crawler implements Runnable{
                 {}
             }
         }
+    }
+
+    private  void Print(String url)
+    {
+        System.out.println(inLinks.get(url));
     }
 
 
