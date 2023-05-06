@@ -46,11 +46,13 @@ public class Crawler implements Runnable{
     }
 
     public void run() {
-        while(CrawledNum.get()<6000)
+        while(CrawledNum.get()<50)
         {
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
+                CrawledNum.incrementAndGet();
+                System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 //VisitedURLs.put(head,1);
                 outLinks.put(head,new HashSet<>());
                 try
@@ -59,6 +61,8 @@ public class Crawler implements Runnable{
                     Elements links = doc.select("a[href]");
                     for(Element link:links)
                     {
+                        if(CrawledNum.get()>=50)
+                            return;
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
                         String HashedURL=VisitedURLsContentHash.get(hash); // the URL that has the same hash
@@ -73,8 +77,8 @@ public class Crawler implements Runnable{
                         }
                         if(HashedURL!=null) // there exists a URL that has this content (or we are trying to crawl a visited URL), I don't need to crawl this URL
                         {
-                            System.out.println("here");
-                            System.out.println(HashedURL);
+//                            System.out.println("here");
+//                            System.out.println(HashedURL);
                             if(inLinks.get(HashedURL)!=null)
                                 inLinks.get(HashedURL).add(head);
                             else {// if the URL was a seed
@@ -84,9 +88,10 @@ public class Crawler implements Runnable{
                             }
                             continue;
                         }
+                        VisitedURLsContentHash.put(hash,LinkURL);
                         RobotsTxtChecker checkrobot=new RobotsTxtChecker(LinkURL);
                         checkrobot.Generate();
-                        if(CrawledNum.get()<5999&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
+                        if(CrawledNum.get()<50&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
                         {
                             //potential critical section!!!!!
                             VisitedURLsContentHash.put(hash,LinkURL);
@@ -94,8 +99,7 @@ public class Crawler implements Runnable{
                             {
                                 // here we need to update the database
                                 inLinks.get(LinkURL).add(head);
-                                System.out.println(inLinks.get(LinkURL));
-                                System.out.println("was visited before "+Thread.currentThread().getName()+"  "+LinkURL);
+                               // System.out.println(inLinks.get(LinkURL));
                                 //continue;
                             }
                             else
@@ -104,8 +108,8 @@ public class Crawler implements Runnable{
                                 tempSet.add(head);
                                 inLinks.put(LinkURL, tempSet);
                             }
-                            CrawledNum.incrementAndGet();
-                            System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+LinkURL+" "+ inLinks.get(LinkURL));
+//                            CrawledNum.incrementAndGet();
+                            //System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+LinkURL+" "+ inLinks.get(LinkURL));
                             URLsToCrawl.add(LinkURL);
                         }
                     }
@@ -164,23 +168,23 @@ public class Crawler implements Runnable{
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             int attempts = 0;
-            while (true)
-            {
-                try
-                {
-                    connection.connect();
-                    break;
-                }
-                catch (IOException e)
-                {
-                    if (++attempts > 5)
-                    {
-                        return "";
-                    }
-                    // Wait for 1 second before retrying
-                    Thread.sleep(10);
-                }
-            }
+//            while (true)
+//            {
+//                try
+//                {
+//                    connection.connect();
+//                    break;
+//                }
+//                catch (IOException e)
+//                {
+//                    if (++attempts > 5)
+//                    {
+//                        return "";
+//                    }
+//                    // Wait for 1 second before retrying
+//                    Thread.sleep(10);
+//                }
+//            }
 
             byte[] contentBytes = new byte[0];
             try (InputStream inputStream = connection.getInputStream())
@@ -194,7 +198,7 @@ public class Crawler implements Runnable{
                 sb.append(String.format("%02x", b & 0xff));
             return sb.toString();
         }
-        catch (IOException | NoSuchAlgorithmException | InterruptedException e)
+        catch (IOException | NoSuchAlgorithmException  e)
         {
             return "";
         }
@@ -213,5 +217,9 @@ public class Crawler implements Runnable{
         }
         for(int i=0;i<8;i++)
             threads[i].join();
+
+        System.out.println("inLinks : "+ crawler.inLinks.size());
+        System.out.println("outLinks : "+ crawler.outLinks.size());
     }
+
 }

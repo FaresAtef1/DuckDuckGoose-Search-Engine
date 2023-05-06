@@ -1,5 +1,6 @@
 package ranker;
 
+import DataBase.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
@@ -7,7 +8,6 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PageRanker {
 
@@ -19,6 +19,8 @@ public class PageRanker {
     private static final double dampingFactor = 0.85;
 
     private static final double threshold = 0.0001;
+
+
 
 
     public PageRanker(HashMap<String, Set<String>> inwardLinks, HashMap<String, Set<String>> outwardLinks) {
@@ -95,5 +97,6 @@ public class PageRanker {
             collection.insertMany(documents);
         }
     }
+
 }
 

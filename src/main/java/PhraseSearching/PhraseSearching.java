@@ -3,7 +3,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import indexer.indexer;
+import indexer.Indexer;
 import org.bson.Document;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -17,7 +17,7 @@ public class PhraseSearching {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         String[] targetPhrase = input.substring(1, input.length() - 1).split("\\s+");
-        List<String> words = indexer.Query_Processing(input);
+        List<String> words = Indexer.Query_Processing(input);
         if(words.isEmpty())
             return;
         List<Document> queries = new ArrayList<>();

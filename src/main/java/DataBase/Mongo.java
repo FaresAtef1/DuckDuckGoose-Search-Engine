@@ -18,10 +18,12 @@ public class Mongo {
 
     public Mongo ()
     {
-        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
-        mongoClientURI = new MongoClientURI(URL);
-        mongoClient = new MongoClient(mongoClientURI);
-        database = mongoClient.getDatabase("myFirstDatabase");
+
+            String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
+            mongoClientURI = new MongoClientURI(URL);
+            mongoClient = new MongoClient(mongoClientURI);
+            database = mongoClient.getDatabase("myFirstDatabase");
+
     }
 
     public void CreateCollections()
@@ -148,6 +150,14 @@ public class Mongo {
         for (Document doc : collection.find())
             DisallowedURLs.add(doc.getString("URL"));
     }
+    public List<Document> ExecuteQuery(Document query, String collectionName)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        List<Document> results = new ArrayList<>();
+        collection.find(query).into(results);
+        return results;
+    }
+
 
     public static void main(String[] args)
     {

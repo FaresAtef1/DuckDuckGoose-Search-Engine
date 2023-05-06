@@ -11,7 +11,7 @@ import stopwordsrm.*;
 import structures.pair;
 
 
-public class indexer {
+public class Indexer {
 
     private static final englishStemmer stemmer = new englishStemmer();
     private static final StopWordsRemover SWRemover = new StopWordsRemover("StopWords.txt");
