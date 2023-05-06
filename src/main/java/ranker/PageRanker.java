@@ -7,30 +7,41 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PageRanker {
 
     private HashMap<String, Double> PageRankScores;
-    private HashMap<String, Set<String>> inLinks;
-    private HashMap<String, Set<String>> outLinks;
+    private ConcurrentHashMap<String, Set<String>> inLinks;
+    private ConcurrentHashMap<String, Set<String>> outLinks;
     private static final double dampingFactor = 0.85;
     private static final double threshold = 0.0001;
 
-    public PageRanker(HashMap<String, Set<String>> inwardLinks, HashMap<String, Set<String>> outwardLinks) {
-        inLinks= new HashMap<String,Set<String>>();
-        outLinks = outwardLinks;
-        // Making sure that only crawled pages are considered
-        System.out.println("inLinks size: " + inwardLinks.size());
-        System.out.println("outLinks size: " + outwardLinks.size());
-        for (String key : outLinks.keySet()) {
-            inLinks.put(key, inwardLinks.get(key));
-       }
-        System.out.println("inLinks size: " + inLinks.size());
-        System.out.println("outLinks size: " + outLinks.size());
+    public PageRanker(ConcurrentHashMap<String, Set<String>> outwardLinks) {
+        this.outLinks = outwardLinks;
+        this.inLinks= this.getInLinks();
         PageRankScores = new HashMap<>();
         for (String key : inLinks.keySet())
             PageRankScores.put(key, 1.0 / inLinks.size());
     }
+    private  ConcurrentHashMap<String,Set<String>> getInLinks() {
+        ConcurrentHashMap<String, Set<String>> inwardLinks;
+        inwardLinks = new ConcurrentHashMap<>();
+
+        for (Map.Entry<String, Set<String>> entry : outLinks.entrySet()) {
+            if(!inwardLinks.containsKey(entry.getKey()))
+                inwardLinks.put(entry.getKey(), new HashSet<>());
+              for (String link : entry.getValue()) {
+                if (outLinks.containsKey(link)) {
+                    if(!inwardLinks.containsKey(link))
+                        inwardLinks.put(link, new HashSet<>());
+                    inwardLinks.get(link).add(entry.getKey());
+                }
+            }
+        }
+        return inwardLinks;
+    }
+
 
     public void CalculatePageRanks() {
         HashMap<String, Double> newPageRankScores = new HashMap<>();

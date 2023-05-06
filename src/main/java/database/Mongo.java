@@ -28,7 +28,6 @@ public class Mongo {
     public void CreateCollections()
     {
         database.createCollection("URLsToCrawl");
-        database.createCollection("inLinks");
         database.createCollection("outLinks");
         database.createCollection("VisitedURLsContentHash");
         database.createCollection("DisallowedURLs");
@@ -40,8 +39,6 @@ public class Mongo {
     public void DropCollections()
     {
         MongoCollection<org.bson.Document> collection=database.getCollection("URLsToCrawl");
-        collection.drop();
-        collection=database.getCollection("inLinks");
         collection.drop();
         collection=database.getCollection("outLinks");
         collection.drop();
@@ -57,7 +54,7 @@ public class Mongo {
         collection.drop();
     }
 
-    public void SaveCrawlerState(ConcurrentLinkedQueue<String> URLsToCrawl, ConcurrentHashMap<String, Set<String>> inLinks,ConcurrentHashMap<String,Set<String>> outLinks, ConcurrentHashMap<String,String> VisitedURLsContentHash , ConcurrentLinkedQueue<String> DisallowedURLs)
+    public void SaveCrawlerState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks, ConcurrentHashMap<String,String> VisitedURLsContentHash , ConcurrentLinkedQueue<String> DisallowedURLs)
     {
         MongoCollection<org.bson.Document> collection = database.getCollection("URLsToCrawl");
         collection.drop();
@@ -66,22 +63,7 @@ public class Mongo {
             Documents1.add(new Document("URL", s));
         if(Documents1.size() > 0)
             collection.insertMany(Documents1);
-        collection = database.getCollection("inLinks");
-        collection.drop();
-        List<org.bson.Document> Documents2 = new ArrayList<>();
-        for (Map.Entry<String, Set<String>> row : inLinks.entrySet()) // for each url in inlinks
-        {
-            Document temp_doc2 = new Document("URL", row.getKey());
-            List<org.bson.Document> temp_list = new ArrayList<>();
-            for(String s : row.getValue()) // for every URL that has row.getKey() as an outlink
-            {
-                temp_list.add(new Document("URL", s));
-            }
-            temp_doc2.append("inLinksOfThisURL", temp_list);
-            Documents2.add(temp_doc2);
-        }
-        if(Documents2.size() > 0)
-             collection.insertMany(Documents2);
+
         collection = database.getCollection("outLinks");
         collection.drop();
         List<org.bson.Document> Documents3 = new ArrayList<>();
@@ -121,20 +103,12 @@ public class Mongo {
 //          collection.insertMany(Documents5);
     }
 
-    public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl, ConcurrentHashMap<String,Set<String>> inLinks,ConcurrentHashMap<String,Set<String>> outLinks ,ConcurrentHashMap<String,String> VisitedURLsContentHash ,ConcurrentLinkedQueue<String> DisallowedURLs)
+    public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks ,ConcurrentHashMap<String,String> VisitedURLsContentHash ,ConcurrentLinkedQueue<String> DisallowedURLs)
     {
         MongoCollection<org.bson.Document> collection = database.getCollection("URLsToCrawl");
         for (Document doc : collection.find())
             URLsToCrawl.add(doc.getString("URL"));
         /////////////////////////////////////////////////////////edited by amr
-        collection = database.getCollection("inLinks");
-        for (Document doc : collection.find()) {
-            String URL = doc.getString("URL");
-            Set<String> temp_set = new HashSet<>();
-            for(Document inlink : (List<Document>) doc.get("inLinksOfThisURL"))////////is this correct?
-                temp_set.add(inlink.getString("URL"));
-            inLinks.put(URL, temp_set);
-        }
         collection = database.getCollection("outLinks");
         for (Document doc : collection.find()) {
             String URL = doc.getString("URL");

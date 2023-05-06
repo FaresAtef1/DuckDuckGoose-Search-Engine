@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 
 import database.Mongo;
+import indexer.Indexer;
+import inverted_files.InvertedFileBuilder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,8 +24,7 @@ public class Crawler implements Runnable{
     private String BaseURL;  // it is not used
     private AtomicInteger CrawledNum; // Thread-safe counter
     private ConcurrentLinkedQueue<String> URLsToCrawl;
-    private static ConcurrentHashMap<String, Set<String>> inLinks;
-    private static ConcurrentHashMap<String, Set<String>> outLinks;
+    private  ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
 
@@ -31,14 +32,13 @@ public class Crawler implements Runnable{
     private static Mongo dbMan ;
     final int MAX_VALUE = 200;
 
-    private static final int StateSize = 3;
+    private static final int StateSize = 4;
 
     public Crawler(String BaseUrl) throws MalformedURLException, InterruptedException {
         CrawledNum=new AtomicInteger(0);
         this.BaseURL = BaseUrl;
         URLsToCrawl = new ConcurrentLinkedQueue<>();
         DisallowedURLs=new ConcurrentLinkedQueue <>();
-        inLinks =new ConcurrentHashMap <>();
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
 //        URLsToCrawl.add("https://www.bbc.com");
@@ -48,7 +48,8 @@ public class Crawler implements Runnable{
 //        Hash= getContentHashFromURL("https://www.bbc.com");
 //        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
         dbMan=new Mongo();
-        dbMan.LoadPrevState(URLsToCrawl,inLinks,outLinks,VisitedURLsContentHash,DisallowedURLs);
+      //  dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
+      //  CrawledNum.set(outLinks.size());
     }
 
 
@@ -57,7 +58,7 @@ public class Crawler implements Runnable{
         {
             if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
             {
-                dbMan.SaveCrawlerState(URLsToCrawl,inLinks,outLinks,VisitedURLsContentHash,DisallowedURLs);
+                dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
                 return;
             }
             String head=URLsToCrawl.poll();
@@ -84,31 +85,13 @@ public class Crawler implements Runnable{
 //                            if(outLinks.get(head)==null)
 //                                 outLinks.put(head,new HashSet<>());
                             outLinks.get(head).add(HashedURL);
-                            if(inLinks.get(HashedURL)!=null)
-                                inLinks.get(HashedURL).add(head);
-                            else // if the URL was a seed
-                            {
-                                Set<String> tempSet = new HashSet<>();
-                                tempSet.add(head);
-                                inLinks.put(HashedURL, tempSet);
-                            }
+
                             continue;
                         }
                         VisitedURLsContentHash.put(hash,LinkURL);
                         GenerateDisAllowedURLs(LinkURL);
                         if(CrawledNum.get()<MAX_VALUE&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
                         {
-                            if(inLinks.get(LinkURL)!=null) // this may happen if the content of the URL has changed
-                            {
-                                // here we need to update the database
-                                inLinks.get(LinkURL).add(head);
-                            }
-                            else
-                            {
-                                Set<String> tempSet = new HashSet<>();
-                                tempSet.add(head);
-                                inLinks.put(LinkURL, tempSet);
-                            }
                             System.out.println(head+" Found "+Thread.currentThread().getName()+"  "+LinkURL+" ");
                             if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE)
                                 URLsToCrawl.add(LinkURL);
@@ -167,23 +150,10 @@ public class Crawler implements Runnable{
             throw new RuntimeException("MD5 algorithm not found", e);
         }
     }
-//    private void HaltThreads() throws InterruptedException {
-//        for(int i=0;i<8;i++)
-//        {
-//            threads[i].interrupt();
-//        }
-//    }
-//    private void ResumeThreads() throws InterruptedException {
-//        for(int i=0;i<8;i++)
-//        {
-//            threads[i].notify();
-//        }
-//    }
 
     public  void PrintEverything()
     {
         System.out.println("URLsToCrawl "+URLsToCrawl.size());
-        System.out.println("inLinks "+inLinks.size());
         System.out.println("outLinks "+outLinks.size());
         System.out.println("VisitedURLsContentHash "+VisitedURLsContentHash.size());
         System.out.println("DisallowedURLs "+DisallowedURLs.size());
@@ -193,21 +163,20 @@ public class Crawler implements Runnable{
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.bbc.com/");
         Thread[] threads = new Thread[8];
-//        for (int i = 0; i <1; i++)
-//        {
-//            threads[i] = new Thread(crawler);
-//            threads[i].setName(String.valueOf(i));
-//            threads[i].start();
-//        }
-//        for(int i=0;i<1;i++)
-//            threads[i].join();
+        for (int i = 0; i <1; i++)
+        {
+            threads[i] = new Thread(crawler);
+            threads[i].setName(String.valueOf(i));
+            threads[i].start();
+        }
+        for(int i=0;i<1;i++)
+            threads[i].join();
 
-//        HashMap<String, Set<String>> inhashMap = new HashMap<>(inLinks);
-//        HashMap<String, Set<String>> outhashMap = new HashMap<>(outLinks);
-//
-//        PageRanker pageRanker = new PageRanker(inhashMap,outhashMap);
-//        pageRanker.CalculatePageRanks();
-//        pageRanker.IndexPageRankScores();
+        InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());
+        builder.Build();
+        PageRanker pageRanker = new PageRanker(crawler.outLinks);
+        pageRanker.CalculatePageRanks();
+        pageRanker.IndexPageRankScores();
 
     }
 }
