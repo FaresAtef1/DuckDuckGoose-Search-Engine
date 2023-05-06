@@ -1,8 +1,8 @@
 package crawler;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
+import java.net.*;
 import java.util.HashSet;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,11 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,12 +22,12 @@ public class Crawler implements Runnable{
     private AtomicInteger CrawledNum; // Thread-safe counter
     private ConcurrentLinkedQueue<String> URLsToCrawl;
     private ConcurrentHashMap<String, Set<String>> inLinks;
-
     private ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
+    final int MAX_VALUE = 200;
 
-    public Crawler(String BaseUrl) {
+    public Crawler(String BaseUrl) throws MalformedURLException, InterruptedException {
         CrawledNum=new AtomicInteger(0);
         this.BaseURL = BaseUrl;
         URLsToCrawl = new ConcurrentLinkedQueue<>();
@@ -39,21 +35,22 @@ public class Crawler implements Runnable{
         inLinks =new ConcurrentHashMap <>();
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
-        URLsToCrawl.add("https://www.example.com/");
-        URLsToCrawl.add("https://www.example.com/index.html");
-
-        //URLsToCrawl.add(BaseUrl);
+//        URLsToCrawl.add("https://www.bbc.com");
+        URLsToCrawl.add(BaseURL);
+        String Hash=getContentHashFromURL(BaseURL);
+        VisitedURLsContentHash.put(Hash,BaseUrl);
+//        Hash= getContentHashFromURL("https://www.bbc.com");
+//        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
     }
 
     public void run() {
-        while(CrawledNum.get()<50)
+        while(CrawledNum.get()<MAX_VALUE)
         {
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
-                //VisitedURLs.put(head,1);
                 outLinks.put(head,new HashSet<>());
                 try
                 {
@@ -61,27 +58,18 @@ public class Crawler implements Runnable{
                     Elements links = doc.select("a[href]");
                     for(Element link:links)
                     {
-                        if(CrawledNum.get()>=50)
+                        if(CrawledNum.get()>=MAX_VALUE)
                             return;
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
                         String HashedURL=VisitedURLsContentHash.get(hash); // the URL that has the same hash
-                        //Modified
-                        if(outLinks.get(head)!=null)
-                            outLinks.get(head).add(HashedURL);
-                        else
-                        {
-                            Set<String> tempSet = new HashSet<>();
-                            tempSet.add(HashedURL);
-                            outLinks.put(head, tempSet);
-                        }
+                        outLinks.get(head).add(HashedURL);
                         if(HashedURL!=null) // there exists a URL that has this content (or we are trying to crawl a visited URL), I don't need to crawl this URL
                         {
-//                            System.out.println("here");
-//                            System.out.println(HashedURL);
                             if(inLinks.get(HashedURL)!=null)
                                 inLinks.get(HashedURL).add(head);
-                            else {// if the URL was a seed
+                            else // if the URL was a seed
+                            {
                                 Set<String> tempSet = new HashSet<>();
                                 tempSet.add(head);
                                 inLinks.put(HashedURL, tempSet);
@@ -89,18 +77,13 @@ public class Crawler implements Runnable{
                             continue;
                         }
                         VisitedURLsContentHash.put(hash,LinkURL);
-                        RobotsTxtChecker checkrobot=new RobotsTxtChecker(LinkURL);
-                        checkrobot.Generate();
-                        if(CrawledNum.get()<50&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
+                        GenerateDisAllowedURLs(LinkURL);
+                        if(CrawledNum.get()<MAX_VALUE&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
                         {
-                            //potential critical section!!!!!
-                            VisitedURLsContentHash.put(hash,LinkURL);
                             if(inLinks.get(LinkURL)!=null) // this may happen if the content of the URL has changed
                             {
                                 // here we need to update the database
                                 inLinks.get(LinkURL).add(head);
-                               // System.out.println(inLinks.get(LinkURL));
-                                //continue;
                             }
                             else
                             {
@@ -108,105 +91,68 @@ public class Crawler implements Runnable{
                                 tempSet.add(head);
                                 inLinks.put(LinkURL, tempSet);
                             }
-//                            CrawledNum.incrementAndGet();
-                            //System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+LinkURL+" "+ inLinks.get(LinkURL));
-                            URLsToCrawl.add(LinkURL);
+                            System.out.println(head+" Found "+Thread.currentThread().getName()+"  "+LinkURL+" ");
+                            if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE)
+                                URLsToCrawl.add(LinkURL);
                         }
                     }
-                }
-                catch (IOException e)
-                {}
+                } catch (IOException | InterruptedException ignored) {}
             }
         }
     }
 
-    private  void Print(String url)
-    {
-        System.out.println(inLinks.get(url));
-    }
-
-
-    public class RobotsTxtChecker{
-        private String BaseURL ;
-        private URL URL ;
-        private URLConnection connection ;
-
-        public RobotsTxtChecker(String BaseUrl) throws IOException {
-            this.BaseURL = BaseUrl;
-            String suffix=(BaseURL.endsWith("/"))? "robots.txt":"/robots.txt";
-            URL = new URL(BaseURL+suffix);
-            connection = URL.openConnection();
-        }
-        public void Generate()
-        {
-            try
-            {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line;
-                while ((line = reader.readLine()) != null)
+    public void GenerateDisAllowedURLs(String urlStr){
+        try{
+            URL url = new URL(urlStr);
+            String robotsUrl = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
+            Scanner scanner = new Scanner(new URL(robotsUrl).openStream());
+            String userAgent = "User-agent: *";
+            boolean matched = false;
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.startsWith("User-agent"))
                 {
-                    if (line.startsWith("Disallow")&&line.length()>12)
-                    {
-                        line=(BaseURL.endsWith("/"))? line.substring(11):line.substring(10); //remove "Disallow: "
-                        //System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+BaseURL+line);
-                        DisallowedURLs.add(BaseURL+line);
-                    }
+                    matched = line.equals(userAgent);
                 }
-                reader.close();
+                if (matched && line.startsWith("Disallow:"))
+                {
+                    String path = line.substring("Disallow:".length()).trim();
+                    if (!path.isEmpty())
+                        DisallowedURLs.add(url.getProtocol() + "://" + url.getHost() + path);
+                }
             }
-            catch (IOException e )
-            {}
         }
+        catch(IOException ignored){}
     }
 
-    private static String getContentHashFromURL(String urlString) {
+    private static String getContentHashFromURL(String input) throws InterruptedException, MalformedURLException {
         try {
-            URL url = new URL(urlString);
-            if (!("http".equals(url.getProtocol())||"https".equals(url.getProtocol()))) {
-                return "";
-            }
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int attempts = 0;
-//            while (true)
-//            {
-//                try
-//                {
-//                    connection.connect();
-//                    break;
-//                }
-//                catch (IOException e)
-//                {
-//                    if (++attempts > 5)
-//                    {
-//                        return "";
-//                    }
-//                    // Wait for 1 second before retrying
-//                    Thread.sleep(10);
-//                }
-//            }
-
-            byte[] contentBytes = new byte[0];
-            try (InputStream inputStream = connection.getInputStream())
-            {
-                contentBytes = inputStream.readAllBytes();
-            }
+            // Get an instance of the MD5 hash algorithm
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] hash = md.digest(contentBytes);
+
+            // Convert the input string to a byte array and hash it
+            byte[] inputBytes = input.getBytes();
+            byte[] hashBytes = md.digest(inputBytes);
+
+            // Convert the hash bytes to a hexadecimal string representation
             StringBuilder sb = new StringBuilder();
-            for (byte b : hash)
-                sb.append(String.format("%02x", b & 0xff));
+            for (int i = 0; i < hashBytes.length; i++) {
+                String hex = Integer.toHexString(0xff & hashBytes[i]);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
             return sb.toString();
-        }
-        catch (IOException | NoSuchAlgorithmException  e)
-        {
-            return "";
+        } catch (NoSuchAlgorithmException e) {
+            // This should never happen since "MD5" is a standard algorithm
+            throw new RuntimeException("MD5 algorithm not found", e);
         }
     }
 
 
     public static void main(String[] args)throws Exception {
-        Crawler crawler =new Crawler("https://www.york.ac.uk/teaching/cws/wws/webpage1.html");
+        Crawler crawler =new Crawler("https://www.bbc.com/");
         Thread[] threads = new Thread[8];
 
         for (int i = 0; i <8; i++)
@@ -221,5 +167,4 @@ public class Crawler implements Runnable{
         System.out.println("inLinks : "+ crawler.inLinks.size());
         System.out.println("outLinks : "+ crawler.outLinks.size());
     }
-
 }
