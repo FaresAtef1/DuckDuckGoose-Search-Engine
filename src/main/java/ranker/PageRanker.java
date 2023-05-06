@@ -12,15 +12,9 @@ public class PageRanker {
 
     private HashMap<String, Double> PageRankScores;
     private HashMap<String, Set<String>> inLinks;
-
     private HashMap<String, Set<String>> outLinks;
-
     private static final double dampingFactor = 0.85;
-
     private static final double threshold = 0.0001;
-
-
-
 
     public PageRanker(HashMap<String, Set<String>> inwardLinks, HashMap<String, Set<String>> outwardLinks) {
         inLinks= new HashMap<String,Set<String>>();
@@ -96,6 +90,4 @@ public class PageRanker {
             collection.insertMany(documents);
         }
     }
-
 }
-
