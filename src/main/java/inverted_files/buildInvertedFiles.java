@@ -17,7 +17,10 @@ class buildInvertedFiles {
     public static Map<Integer, List<pair<String, pair<Double, String>>>> postings = new HashMap<>();
     public static Map<String , Set<String>>  stem= new HashMap<>();
 
-  //  private List<String> URLs;
+    static Map<String,Integer> positingRanks = new HashMap<>();
+
+
+    //  private List<String> URLs;
 
 //    public buildInvertedFiles(List<String> URLs)
 //    {
@@ -28,10 +31,19 @@ class buildInvertedFiles {
         String s = "https://www.york.ac.uk/teaching/cws/wws/webpage1.html";
         URLs.add(s);
         URLs.add("https://www.geeksforgeeks.org/set-in-java/");
-        URLs.add("https://facebook.com/");
-        URLs.add("https://www.learnthat.org/pages/view/suffix.html");
+        URLs.add("https://slite.com/chapter/what-is-a-wiki");
+        URLs.add("https://en.wikipedia.org/wiki/Wiki");
         URLs.add("https://en.wikipedia.org/wiki/Word_stem");
         URLs.add("https://medium.com/@tusharsri/nlp-a-quick-guide-to-stemming-60f1ca5db49e");
+
+        positingRanks.put("title", 0);
+        positingRanks.put("h1", 1);
+        positingRanks.put("h2", 2);
+        positingRanks.put("h3", 3);
+        positingRanks.put("h4", 4);
+        positingRanks.put("h5", 5);
+        positingRanks.put("h6", 6);
+        positingRanks.put("body", 7);
 //        HashMap<String,Set<String>> outlinks= new HashMap<>();
 //        HashMap<String,Set<String>> inlinks= new HashMap<>();
 //
@@ -182,11 +194,18 @@ class buildInvertedFiles {
 
     public static Map<Integer, pair<Double, String>> wordCounts(List<pair<Integer, String>> tokenIds) {
         Map<Integer, pair<Double, String>> wordCounts = new HashMap<>(); // wordID, <tf, position>
+
+
         for (pair<Integer, String> id : tokenIds)
         {
             pair<Double, String> wordData= wordCounts.get(id.first);
-            if (wordData!=null)
+            if (wordData!=null) {
                 wordData.first = wordData.first + 1;
+                if(positingRanks.get(wordData.second)>positingRanks.get(id.second))
+                {
+                    wordData.second=id.second;
+                }
+            }
             else
                 wordData = new pair<>(1.0, id.second);
             wordCounts.put(id.first, wordData);

@@ -5,7 +5,7 @@ import database.Mongo;
 import indexer.Indexer;
 import org.bson.Document;
 import ranker.Ranker;
-
+import java.net.URI;
 import java.util.*;
 
 public class Query_Processor {
@@ -24,6 +24,8 @@ public class Query_Processor {
         Mongo dbMan = new Mongo();
             List<Document> distinctValues = new ArrayList<>();
             distinctValues=dbMan.ExecuteQuery(query, "Indexer");
+            if(distinctValues.isEmpty())
+                System.out.println("No results found");
             Ranker.Rank(distinctValues, words);
         scanner.close();
 
