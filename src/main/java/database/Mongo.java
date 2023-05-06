@@ -6,24 +6,24 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
+import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Mongo {
-    private MongoClientURI mongoClientURI;
-    private MongoClient mongoClient;
-    private MongoDatabase database;
+    private final MongoClientURI mongoClientURI;
+    private final MongoClient mongoClient;
+    private final MongoDatabase database;
 
     public Mongo ()
     {
-
-            String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
-            mongoClientURI = new MongoClientURI(URL);
-            mongoClient = new MongoClient(mongoClientURI);
-            database = mongoClient.getDatabase("myFirstDatabase");
-
+        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
+        mongoClientURI = new MongoClientURI(URL);
+        mongoClient = new MongoClient(mongoClientURI);
+        database = mongoClient.getDatabase("myFirstDatabase");
     }
+
 
     public void CreateCollections()
     {
@@ -32,6 +32,7 @@ public class Mongo {
         database.createCollection("outLinks");
         database.createCollection("VisitedURLsContentHash");
         database.createCollection("DisallowedURLs");
+        database.createCollection("PageRankScores");
         database.createCollection("Indexer");
         database.createCollection("SearchHistory");
     }
@@ -40,13 +41,15 @@ public class Mongo {
     {
         MongoCollection<org.bson.Document> collection=database.getCollection("URLsToCrawl");
         collection.drop();
-        collection=database.getCollection("VisitedURLsCount");
-        collection.drop();
         collection=database.getCollection("inLinks");
         collection.drop();
         collection=database.getCollection("outLinks");
         collection.drop();
+        collection=database.getCollection("VisitedURLsContentHash");
+        collection.drop();
         collection=database.getCollection("DisallowedURLs");
+        collection.drop();
+        collection=database.getCollection("PageRankScores");
         collection.drop();
         collection=database.getCollection("Indexer");
         collection.drop();
@@ -61,8 +64,8 @@ public class Mongo {
         List<org.bson.Document> Documents1 = new ArrayList<>();
         for (String s : URLsToCrawl)
             Documents1.add(new Document("URL", s));
-        collection.insertMany(Documents1);
-        ////////////////////////////////////////////////////////////////
+        if(Documents1.size() > 0)
+            collection.insertMany(Documents1);
         collection = database.getCollection("inLinks");
         collection.drop();
         List<org.bson.Document> Documents2 = new ArrayList<>();
@@ -77,11 +80,11 @@ public class Mongo {
             temp_doc2.append("inLinksOfThisURL", temp_list);
             Documents2.add(temp_doc2);
         }
-        collection.insertMany(Documents2);
-        ///////////////////////////////////////////////////////////////// edited by amr
-        collection = database.getCollection("outLinksCount");
+        if(Documents2.size() > 0)
+             collection.insertMany(Documents2);
+        collection = database.getCollection("outLinks");
         collection.drop();
-        List<org.bson.Document> outLinks_temp=new ArrayList<>();
+        List<org.bson.Document> Documents3 = new ArrayList<>();
         for(Map.Entry<String,Set<String>> entry:outLinks.entrySet())
         {
             Document temp_doc = new Document("URL", entry.getKey());
@@ -91,32 +94,34 @@ public class Mongo {
                 temp_list.add(new Document("URL", s));
             }
             temp_doc.append("outLinksOfThisURL", temp_list);
-            Documents2.add(temp_doc);
+            Documents3.add(temp_doc);
         }
-        collection.insertMany(outLinks_temp);
-        ////////////////////////////////////////////////////////////////
+        if(Documents3.size() > 0)
+            collection.insertMany(Documents3);
         collection = database.getCollection("VisitedURLsContentHash");
         collection.drop();
-        List<org.bson.Document> Documents3 = new ArrayList<>();
+        List<org.bson.Document> Documents4 = new ArrayList<>();
         for (Map.Entry<String, String> row : VisitedURLsContentHash.entrySet())
         {
             Document temp_doc = new Document("Hash", row.getKey()).append("URL", row.getValue());
-            Documents3.add(temp_doc);
-        }
-        collection.insertMany(Documents3);
-
-        collection = database.getCollection("DisallowedURLs");
-        collection.drop();
-        List<org.bson.Document> Documents4 = new ArrayList<>();
-        for (String s : DisallowedURLs)
-        {
-            Document temp_doc = new Document("URL", s);
             Documents4.add(temp_doc);
         }
-        collection.insertMany(Documents4);
+        if(Documents4.size() > 0)
+            collection.insertMany(Documents4);
+
+//        collection = database.getCollection("DisallowedURLs");
+//        collection.drop();
+//        List<org.bson.Document> Documents5 = new ArrayList<>();
+//        for (String s : DisallowedURLs)
+//        {
+//            Document temp_doc = new Document("URL", s);
+//            Documents5.add(temp_doc);
+//        }
+//        if(Documents5.size() > 0)
+//          collection.insertMany(Documents5);
     }
 
-    public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl, ConcurrentHashMap<String,Set<String>> inLinks,ConcurrentHashMap<String,Integer> outLinksCount ,ConcurrentHashMap<String,String> VisitedURLsContentHash ,ConcurrentLinkedQueue<String> DisallowedURLs)
+    public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl, ConcurrentHashMap<String,Set<String>> inLinks,ConcurrentHashMap<String,Set<String>> outLinks ,ConcurrentHashMap<String,String> VisitedURLsContentHash ,ConcurrentLinkedQueue<String> DisallowedURLs)
     {
         MongoCollection<org.bson.Document> collection = database.getCollection("URLsToCrawl");
         for (Document doc : collection.find())
@@ -130,16 +135,14 @@ public class Mongo {
                 temp_set.add(inlink.getString("URL"));
             inLinks.put(URL, temp_set);
         }
-        /////////////////////////////////////////////////////////edited by amr
         collection = database.getCollection("outLinks");
         for (Document doc : collection.find()) {
             String URL = doc.getString("URL");
             Set<String> temp_set = new HashSet<>();
-            for(Document inlink : (List<Document>) doc.get("outLinksOfThisURl"))////////is this correct?
-                temp_set.add(inlink.getString("URL"));
-            inLinks.put(URL, temp_set);
+            for(Document outLink : (List<Document>) doc.get("outLinksOfThisURL"))////////is this correct?
+                temp_set.add(outLink.getString("URL"));
+            outLinks.put(URL, temp_set);
         }
-        /////////////////////////////////////////////////////////
 
         collection = database.getCollection("VisitedURLsContentHash");
         for (Document doc : collection.find())
@@ -149,6 +152,7 @@ public class Mongo {
         for (Document doc : collection.find())
             DisallowedURLs.add(doc.getString("URL"));
     }
+
     public List<Document> ExecuteQuery(Document query, String collectionName)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
@@ -157,21 +161,24 @@ public class Mongo {
         return results;
     }
 
+    public void mongotest(HashMap<String,Set<String>> inlinks)
+    {
+        MongoCollection<org.bson.Document> collection = database.getCollection("inLinks");
+        for (Document doc : collection.find()) {
+            String URL = doc.getString("URL");
+            Set<String> temp_set = new HashSet<>();
+            for(Document inlink : (List<Document>) doc.get("inLinksOfThisURL"))////////is this correct?
+                temp_set.add(inlink.getString("URL"));
+            inlinks.put(URL, temp_set);
+        }
+    }
 
     public static void main(String[] args)
     {
         Mongo mon=new Mongo();
-        ConcurrentLinkedQueue<String> URLsToCrawl=new ConcurrentLinkedQueue<>();
-        ConcurrentHashMap<String,Set<String>> inLinks=new ConcurrentHashMap<>();
-        ConcurrentHashMap<String,Integer> outLinksCount=new ConcurrentHashMap<>();
-        ConcurrentHashMap<String,String> VisitedURLsContentHash =new ConcurrentHashMap<>();
-        ConcurrentLinkedQueue<String> DisallowedURLs=new ConcurrentLinkedQueue<>();
-        mon.LoadPrevState(URLsToCrawl,inLinks,outLinksCount,VisitedURLsContentHash,DisallowedURLs);
+        HashMap<String,Set<String>> inlinks=new HashMap<>();
 
-        System.out.println(URLsToCrawl);
-        System.out.println(inLinks);
-        System.out.println(outLinksCount);
-        System.out.println(VisitedURLsContentHash);
-        System.out.println(DisallowedURLs);
+        mon.mongotest(inlinks);
+        System.out.println(inlinks);
     }
 }

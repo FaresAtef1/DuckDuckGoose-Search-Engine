@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
+
+import database.Mongo;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +26,12 @@ public class Crawler implements Runnable{
     private static ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
+
+
+    private static Mongo dbMan ;
     final int MAX_VALUE = 200;
+
+    private static final int StateSize = 3;
 
     public Crawler(String BaseUrl) throws MalformedURLException, InterruptedException {
         CrawledNum=new AtomicInteger(0);
@@ -40,14 +47,23 @@ public class Crawler implements Runnable{
         VisitedURLsContentHash.put(Hash,BaseUrl);
 //        Hash= getContentHashFromURL("https://www.bbc.com");
 //        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
+        dbMan=new Mongo();
+        dbMan.LoadPrevState(URLsToCrawl,inLinks,outLinks,VisitedURLsContentHash,DisallowedURLs);
     }
+
 
     public void run() {
         while(CrawledNum.get()<MAX_VALUE)
         {
+            if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
+            {
+                dbMan.SaveCrawlerState(URLsToCrawl,inLinks,outLinks,VisitedURLsContentHash,DisallowedURLs);
+                return;
+            }
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
+
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 outLinks.put(head,new HashSet<>());
@@ -61,10 +77,13 @@ public class Crawler implements Runnable{
                             return;
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
-                        String HashedURL=VisitedURLsContentHash.get(hash); // the URL that has the same hash
-                        outLinks.get(head).add(HashedURL);
+                        String HashedURL=VisitedURLsContentHash.get(hash);
+                        // the URL that has the same hash
                         if(HashedURL!=null) // there exists a URL that has this content (or we are trying to crawl a visited URL), I don't need to crawl this URL
                         {
+//                            if(outLinks.get(head)==null)
+//                                 outLinks.put(head,new HashSet<>());
+                            outLinks.get(head).add(HashedURL);
                             if(inLinks.get(HashedURL)!=null)
                                 inLinks.get(HashedURL).add(head);
                             else // if the URL was a seed
@@ -148,25 +167,47 @@ public class Crawler implements Runnable{
             throw new RuntimeException("MD5 algorithm not found", e);
         }
     }
+//    private void HaltThreads() throws InterruptedException {
+//        for(int i=0;i<8;i++)
+//        {
+//            threads[i].interrupt();
+//        }
+//    }
+//    private void ResumeThreads() throws InterruptedException {
+//        for(int i=0;i<8;i++)
+//        {
+//            threads[i].notify();
+//        }
+//    }
+
+    public  void PrintEverything()
+    {
+        System.out.println("URLsToCrawl "+URLsToCrawl.size());
+        System.out.println("inLinks "+inLinks.size());
+        System.out.println("outLinks "+outLinks.size());
+        System.out.println("VisitedURLsContentHash "+VisitedURLsContentHash.size());
+        System.out.println("DisallowedURLs "+DisallowedURLs.size());
+    }
 
 
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.bbc.com/");
         Thread[] threads = new Thread[8];
+//        for (int i = 0; i <1; i++)
+//        {
+//            threads[i] = new Thread(crawler);
+//            threads[i].setName(String.valueOf(i));
+//            threads[i].start();
+//        }
+//        for(int i=0;i<1;i++)
+//            threads[i].join();
 
-        for (int i = 0; i <8; i++)
-        {
-            threads[i] = new Thread(crawler);
-            threads[i].setName(String.valueOf(i));
-            threads[i].start();
-        }
-        for(int i=0;i<8;i++)
-            threads[i].join();
 //        HashMap<String, Set<String>> inhashMap = new HashMap<>(inLinks);
 //        HashMap<String, Set<String>> outhashMap = new HashMap<>(outLinks);
 //
 //        PageRanker pageRanker = new PageRanker(inhashMap,outhashMap);
 //        pageRanker.CalculatePageRanks();
 //        pageRanker.IndexPageRankScores();
+
     }
 }
