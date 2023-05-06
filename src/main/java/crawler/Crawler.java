@@ -1,9 +1,7 @@
 package crawler;
 
 import java.net.*;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ranker.PageRanker;
 
 import java.io.IOException;
 
@@ -21,8 +20,8 @@ public class Crawler implements Runnable{
     private String BaseURL;  // it is not used
     private AtomicInteger CrawledNum; // Thread-safe counter
     private ConcurrentLinkedQueue<String> URLsToCrawl;
-    private ConcurrentHashMap<String, Set<String>> inLinks;
-    private ConcurrentHashMap<String, Set<String>> outLinks;
+    private static ConcurrentHashMap<String, Set<String>> inLinks;
+    private static ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
     final int MAX_VALUE = 200;
@@ -163,8 +162,11 @@ public class Crawler implements Runnable{
         }
         for(int i=0;i<8;i++)
             threads[i].join();
-
-        System.out.println("inLinks : "+ crawler.inLinks.size());
-        System.out.println("outLinks : "+ crawler.outLinks.size());
+//        HashMap<String, Set<String>> inhashMap = new HashMap<>(inLinks);
+//        HashMap<String, Set<String>> outhashMap = new HashMap<>(outLinks);
+//
+//        PageRanker pageRanker = new PageRanker(inhashMap,outhashMap);
+//        pageRanker.CalculatePageRanks();
+//        pageRanker.IndexPageRankScores();
     }
 }
