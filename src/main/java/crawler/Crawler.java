@@ -3,6 +3,7 @@ package crawler;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 public class Crawler implements Runnable{
     private String BaseURL;  // it is not used
     private AtomicInteger CrawledNum; // Thread-safe counter
+    private AtomicBoolean isPaused; // Thread-safe boolean
     private ConcurrentLinkedQueue<String> URLsToCrawl;
     private  ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
@@ -30,11 +32,12 @@ public class Crawler implements Runnable{
 
 
     private static Mongo dbMan ;
-    final int MAX_VALUE = 200;
+    final int MAX_VALUE = 240;
 
     private static final int StateSize = 4;
 
     public Crawler(String BaseUrl) throws MalformedURLException, InterruptedException {
+        isPaused=new AtomicBoolean(false); // initially crawler is not paused
         CrawledNum=new AtomicInteger(0);
         this.BaseURL = BaseUrl;
         URLsToCrawl = new ConcurrentLinkedQueue<>();
@@ -48,23 +51,19 @@ public class Crawler implements Runnable{
 //        Hash= getContentHashFromURL("https://www.bbc.com");
 //        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
         dbMan=new Mongo();
-      //  dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
-      //  CrawledNum.set(outLinks.size());
+        dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
+        CrawledNum.set(outLinks.size());
     }
 
 
     public void run() {
         while(CrawledNum.get()<MAX_VALUE)
         {
-            if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
-            {
-                dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
-                return;
-            }
+
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
-
+//                checkIfInterrupted();
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 outLinks.put(head,new HashSet<>());
@@ -74,6 +73,7 @@ public class Crawler implements Runnable{
                     Elements links = doc.select("a[href]");
                     for(Element link:links)
                     {
+                        checkIfInterrupted();
                         if(CrawledNum.get()>=MAX_VALUE)
                             return;
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
@@ -97,7 +97,24 @@ public class Crawler implements Runnable{
                                 URLsToCrawl.add(LinkURL);
                         }
                     }
+                    if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
+                    {
+                        isPaused.set(true);
+                        dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
+                        isPaused.set(false);
+
+                    }
                 } catch (IOException | InterruptedException ignored) {}
+            }
+        }
+    }
+
+    private void checkIfInterrupted()   {
+        while (isPaused.get()) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -163,13 +180,13 @@ public class Crawler implements Runnable{
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.bbc.com/");
         Thread[] threads = new Thread[8];
-        for (int i = 0; i <1; i++)
+        for (int i = 0; i <4; i++)
         {
             threads[i] = new Thread(crawler);
             threads[i].setName(String.valueOf(i));
             threads[i].start();
         }
-        for(int i=0;i<1;i++)
+        for(int i=0;i<4;i++)
             threads[i].join();
 
         InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());

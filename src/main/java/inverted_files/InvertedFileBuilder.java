@@ -18,7 +18,7 @@ public class InvertedFileBuilder {
     private final Map<Integer, List<pair<String, pair<Double, String>>>> postings = new HashMap<>();
     private final  Map<String , Set<String>>  stem= new HashMap<>();
 
-    private final  Map<String,Integer> positingRanks = new HashMap<>();
+    private final  Map<String,Integer> postingRanks = new HashMap<>();
 
     private final Set<String> URLs;
 
@@ -27,14 +27,15 @@ public class InvertedFileBuilder {
     public InvertedFileBuilder(Set<String> URLs)
     {
         this.URLs= URLs;
-        positingRanks.put("title", 0);
-        positingRanks.put("h1", 1);
-        positingRanks.put("h2", 2);
-        positingRanks.put("h3", 3);
-        positingRanks.put("h4", 4);
-        positingRanks.put("h5", 5);
-        positingRanks.put("h6", 6);
-        positingRanks.put("body", 7);
+        postingRanks.put("title", 0);
+        postingRanks.put("h1", 1);
+        postingRanks.put("h2", 2);
+        postingRanks.put("h3", 3);
+        postingRanks.put("h4", 4);
+        postingRanks.put("h5", 5);
+        postingRanks.put("h6", 6);
+        postingRanks.put("body", 7);
+        postingRanks.put("label", 0);
 
     }
 
@@ -145,7 +146,7 @@ public class InvertedFileBuilder {
             pair<Double, String> wordData= wordCounts.get(id.first);
             if (wordData!=null) {
                 wordData.first = wordData.first + 1;
-                if(positingRanks.get(wordData.second)>positingRanks.get(id.second))
+                if(postingRanks.get(wordData.second)>postingRanks.get(id.second))
                 {
                     wordData.second=id.second;
                 }

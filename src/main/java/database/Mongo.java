@@ -12,19 +12,29 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Mongo {
-    private final MongoClientURI mongoClientURI;
-    private final MongoClient mongoClient;
-    private final MongoDatabase database;
+    private static MongoClientURI mongoClientURI;
+    private static MongoClient mongoClient;
+    private static MongoDatabase database;
+
+    private static boolean isConnectionEstablished = false;
 
     public Mongo ()
     {
+        if(isConnectionEstablished)
+            return;
+
         String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
         mongoClientURI = new MongoClientURI(URL);
         mongoClient = new MongoClient(mongoClientURI);
         database = mongoClient.getDatabase("myFirstDatabase");
+        isConnectionEstablished = true;
     }
 
-
+    public void  closeConnection()
+    {
+        mongoClient.close();
+        isConnectionEstablished = false;
+    }
     public void CreateCollections()
     {
         database.createCollection("URLsToCrawl");
