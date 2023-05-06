@@ -1,6 +1,6 @@
-package QueryProcessor;
+package queryprocessor;
 
-import DataBase.Mongo;
+import database.Mongo;
 
 import indexer.Indexer;
 import org.bson.Document;

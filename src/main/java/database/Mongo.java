@@ -1,4 +1,4 @@
-package DataBase;
+package database;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -6,7 +6,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 
-import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;

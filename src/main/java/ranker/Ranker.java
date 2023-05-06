@@ -1,6 +1,6 @@
 package ranker;
 
-import DataBase.Mongo;
+import database.Mongo;
 import org.bson.Document;
 
 import java.util.*;

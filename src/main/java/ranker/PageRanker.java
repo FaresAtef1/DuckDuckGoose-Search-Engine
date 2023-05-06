@@ -1,6 +1,5 @@
 package ranker;
 
-import DataBase.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;

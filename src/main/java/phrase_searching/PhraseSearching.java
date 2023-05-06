@@ -1,4 +1,4 @@
-package PhraseSearching;
+package phrase_searching;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;

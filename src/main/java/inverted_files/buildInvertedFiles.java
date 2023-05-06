@@ -1,4 +1,4 @@
-package InvertedFiles;
+package inverted_files;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
@@ -6,13 +6,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.*;
 import indexer.*;
-import ranker.PageRanker;
 import structures.pair;
 
 class buildInvertedFiles {

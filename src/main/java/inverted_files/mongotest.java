@@ -1,4 +1,4 @@
-package InvertedFiles;
+package inverted_files;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
