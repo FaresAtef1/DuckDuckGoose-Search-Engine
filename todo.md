@@ -5,21 +5,22 @@
 - [x] InvertedFile
 - [x] Query Processor
 - [x] Phrase Searching
-- [ ] Ranker
-- [ ] Web Interface
+- [x] Ranker
+- [x] Web Interface
 - [ ] Bonus
 - [ ] PDF file containing algorithms
 - [x] Stem the whole document or just the search query?
 - [x] When do i crawl?
 - [x] how can the crawler be interrupted
 - [x] What do you mean by the order of page visits?
-- [ ] Crawler state maintenance and interruption
+- [x] Crawler state maintenance and interruption
 - [x] Robots.txt??
 - [x] which User-agents should be considered 
-- [ ] How do I update the indexer?
-- [ ] How do I match "travel" and "traveler"?
-- [ ] TF-IDF
-- [ ] tags priority in indexer
-- [ ] Save CrawledNum
-- [ ] Copy the contents before saving
-- [ ] Remove inLinks
+- [x] How do I update the indexer?
+- [x] How do I match "travel" and "traveler"?
+- [x] TF-IDF
+- [x] tags priority in indexer
+- [x] Save CrawledNum
+- [x] Copy the contents before saving
+- [x] Remove inLinks
+- [] include phrase searching & fix robots
