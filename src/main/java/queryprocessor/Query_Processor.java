@@ -28,6 +28,7 @@ public class Query_Processor {
                 System.out.println("No results found");
             Ranker.Rank(distinctValues, words);
         scanner.close();
+        dbMan.closeConnection();
 
     }
 }

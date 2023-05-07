@@ -156,13 +156,16 @@ public class Mongo {
             inlinks.put(URL, temp_set);
         }
     }
+    public void updateCollection(String collectionName , List<Document> documents)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.drop();
+        collection.insertMany(documents);
+    }
 
     public static void main(String[] args)
     {
         Mongo mon=new Mongo();
-        HashMap<String,Set<String>> inlinks=new HashMap<>();
-
-        mon.mongotest(inlinks);
-        System.out.println(inlinks);
+        database.createCollection("Indexer");
     }
 }

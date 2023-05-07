@@ -4,6 +4,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import database.Mongo;
 import org.bson.Document;
 
 import java.util.*;
@@ -91,14 +92,7 @@ public class PageRanker {
         {
             documents.add(new org.bson.Document("DocURL",entry.getKey()).append("PageRankScore",entry.getValue()));
         }
-        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
-        MongoClientURI mongoClientURI = new MongoClientURI(URL);
-        try(MongoClient mongoClient = new MongoClient(mongoClientURI))
-        {
-            MongoDatabase database = mongoClient.getDatabase("myFirstDatabase");
-            MongoCollection<Document> collection = database.getCollection("PageRankScores");
-            collection.drop();
-            collection.insertMany(documents);
-        }
+        Mongo mongo = new Mongo();
+        mongo.updateCollection("PageRankScores",documents);
     }
 }

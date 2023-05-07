@@ -30,11 +30,12 @@ public class Crawler implements Runnable{
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
 
+    private  List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
 
     private static Mongo dbMan ;
-    final int MAX_VALUE = 240;
+    final int MAX_VALUE = 400;
 
-    private static final int StateSize = 4;
+    private static final int StateSize = 25;
 
     public Crawler(String BaseUrl) throws MalformedURLException, InterruptedException {
         isPaused=new AtomicBoolean(false); // initially crawler is not paused
@@ -45,9 +46,9 @@ public class Crawler implements Runnable{
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
 //        URLsToCrawl.add("https://www.bbc.com");
-        URLsToCrawl.add(BaseURL);
-        String Hash=getContentHashFromURL(BaseURL);
-        VisitedURLsContentHash.put(Hash,BaseUrl);
+//        URLsToCrawl.add(BaseURL);
+//        String Hash=getContentHashFromURL(BaseURL);
+//        VisitedURLsContentHash.put(Hash,BaseUrl);
 //        Hash= getContentHashFromURL("https://www.bbc.com");
 //        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
         dbMan=new Mongo();
@@ -63,7 +64,7 @@ public class Crawler implements Runnable{
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
-//                checkIfInterrupted();
+                checkIfInterrupted();
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 outLinks.put(head,new HashSet<>());
@@ -73,10 +74,16 @@ public class Crawler implements Runnable{
                     Elements links = doc.select("a[href]");
                     for(Element link:links)
                     {
+
                         checkIfInterrupted();
                         if(CrawledNum.get()>=MAX_VALUE)
                             return;
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
+                        for(String ext:extensions) //chcecking if the URL is a media file
+                        {
+                            if(LinkURL.endsWith(ext))
+                                continue;
+                        }
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
                         String HashedURL=VisitedURLsContentHash.get(hash);
                         // the URL that has the same hash
@@ -97,6 +104,7 @@ public class Crawler implements Runnable{
                                 URLsToCrawl.add(LinkURL);
                         }
                     }
+
                     if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
                     {
                         isPaused.set(true);
@@ -194,6 +202,8 @@ public class Crawler implements Runnable{
         PageRanker pageRanker = new PageRanker(crawler.outLinks);
         pageRanker.CalculatePageRanks();
         pageRanker.IndexPageRankScores();
+        Mongo dbMan=new Mongo();
+        dbMan.closeConnection();
 
     }
 }

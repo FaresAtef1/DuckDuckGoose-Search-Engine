@@ -4,6 +4,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import database.Mongo;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -18,7 +19,7 @@ public class InvertedFileBuilder {
     private final Map<Integer, List<pair<String, pair<Double, String>>>> postings = new HashMap<>();
     private final  Map<String , Set<String>>  stem= new HashMap<>();
 
-    private final  Map<String,Integer> postingRanks = new HashMap<>();
+    private final  Map<String,Integer> positingRanks = new HashMap<>();
 
     private final Set<String> URLs;
 
@@ -27,33 +28,35 @@ public class InvertedFileBuilder {
     public InvertedFileBuilder(Set<String> URLs)
     {
         this.URLs= URLs;
-        postingRanks.put("title", 0);
-        postingRanks.put("h1", 1);
-        postingRanks.put("h2", 2);
-        postingRanks.put("h3", 3);
-        postingRanks.put("h4", 4);
-        postingRanks.put("h5", 5);
-        postingRanks.put("h6", 6);
-        postingRanks.put("body", 7);
-        postingRanks.put("label", 0);
+        positingRanks.put("title", 0);
+        positingRanks.put("h1", 1);
+        positingRanks.put("h2", 2);
+        positingRanks.put("h3", 3);
+        positingRanks.put("h4", 4);
+        positingRanks.put("h5", 5);
+        positingRanks.put("h6", 6);
+        positingRanks.put("body", 7);
+        positingRanks.put("label", 0);
 
     }
 
     private void Invert()
     {
         for (String ss : URLs) {
+            Document temp = null;
             try {
-
-
-                Document temp = Jsoup.connect(ss).get();
-                List<pair<String, String>> tokens = Indexer.Normalize(temp); // String, position
-                List<pair<Integer, String>> tokensIds = convertTokensToIds(tokens);
-                Map<Integer, pair<Double, String>> WordsCounts = wordCounts(tokensIds);
-                addToPostings(ss, WordsCounts);
+                temp = Jsoup.connect(ss).get();
             }
             catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                continue;
             }
+            if(temp==null)
+                continue;
+            List<pair<String, String>> tokens = Indexer.Normalize(temp); // String, position
+            List<pair<Integer, String>> tokensIds = convertTokensToIds(tokens);
+            Map<Integer, pair<Double, String>> WordsCounts = wordCounts(tokensIds);
+            addToPostings(ss, WordsCounts);
         }
     }
     private void Index()
@@ -84,19 +87,8 @@ public class InvertedFileBuilder {
             Documents.add(query);
         }
         // DataBase
-        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
-        MongoClientURI mongoClientURI = new MongoClientURI(URL);
-        try(MongoClient mongoClient = new MongoClient(mongoClientURI))
-        {
-            MongoDatabase database = mongoClient.getDatabase("myFirstDatabase");
-            MongoCollection<org.bson.Document> collection = database.getCollection("Indexer");
-            collection.drop();
-            collection.insertMany(Documents);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        Mongo mongo = new Mongo();
+        mongo.updateCollection("Indexer",Documents);
     }
 
     public void Build()
@@ -146,7 +138,7 @@ public class InvertedFileBuilder {
             pair<Double, String> wordData= wordCounts.get(id.first);
             if (wordData!=null) {
                 wordData.first = wordData.first + 1;
-                if(postingRanks.get(wordData.second)>postingRanks.get(id.second))
+                if(positingRanks.get(wordData.second)>positingRanks.get(id.second))
                 {
                     wordData.second=id.second;
                 }
