@@ -37,7 +37,6 @@ public class InvertedFileBuilder {
         positingRanks.put("h6", 6);
         positingRanks.put("body", 7);
         positingRanks.put("label", 0);
-
     }
 
     private void Invert()
@@ -47,10 +46,7 @@ public class InvertedFileBuilder {
             try {
                 temp = Jsoup.connect(ss).get();
             }
-            catch (IOException e) {
-                //e.printStackTrace();
-                continue;
-            }
+            catch (IOException e) {continue;}
             if(temp==null)
                 continue;
             List<pair<String, String>> tokens = Indexer.Normalize(temp); // String, position

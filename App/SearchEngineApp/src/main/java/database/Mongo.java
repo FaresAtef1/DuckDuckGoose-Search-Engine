@@ -145,15 +145,16 @@ public class Mongo {
         return results;
     }
 
-    public void mongotest(HashMap<String,Set<String>> inlinks)
+    public void mongotest()
     {
-        MongoCollection<org.bson.Document> collection = database.getCollection("inLinks");
-        for (Document doc : collection.find()) {
-            String URL = doc.getString("URL");
-            Set<String> temp_set = new HashSet<>();
-            for(Document inlink : (List<Document>) doc.get("inLinksOfThisURL"))////////is this correct?
-                temp_set.add(inlink.getString("URL"));
-            inlinks.put(URL, temp_set);
+
+        loop1:for(int i=0;i<10;i++)
+        {
+            for(int j=0;j<10;j++) {
+                if (j == 2)
+                    continue loop1;
+                System.out.println(i + " "+j );
+            }
         }
     }
     public void updateCollection(String collectionName , List<Document> documents)
@@ -166,6 +167,7 @@ public class Mongo {
     public static void main(String[] args)
     {
         Mongo mon=new Mongo();
-        database.createCollection("Indexer");
+//        database.createCollection("Indexer");
+        mon.mongotest();
     }
 }

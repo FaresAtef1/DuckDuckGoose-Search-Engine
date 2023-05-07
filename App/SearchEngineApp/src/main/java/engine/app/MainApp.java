@@ -1,6 +1,7 @@
 package engine.app;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import indexer.Indexer;
@@ -22,6 +23,8 @@ public class MainApp extends HttpServlet {
         String query = request.getParameter("query");
         Query_Processor queryProcessor = new Query_Processor();
         List<String> URLs = queryProcessor.RetrieveResults(query);
+        if(URLs==null)
+            URLs= new ArrayList<String>() ;
         System.out.println("Num of results : "+URLs.size());
         request.setAttribute("results", URLs);
         HttpSession session = request.getSession();

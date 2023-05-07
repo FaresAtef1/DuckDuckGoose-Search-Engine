@@ -1,20 +1,16 @@
-<%@ page import="java.util.List" %><%--
-  Created by IntelliJ IDEA.
-  User: Amr Elsheshtawy
-  Date: 07/05/2023
-  Time: 7:01 am
-  To change this template use File | Settings | File Templates.
---%>
+<%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     List<String> results = (List<String>) session.getAttribute("results");
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link href="css/ResultsStyle.css" rel="stylesheet" type="text/css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/search.css">
+    <title>Google Search Page</title>
 </head>
-
 <% int itemsPerPage = 10; %>
 <% int totalItems = results.size(); %>
 <% int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage); %>
@@ -24,23 +20,47 @@
 <% int endIndex = Math.min(startIndex + itemsPerPage, totalItems); %>
 <% List<String> currentPageResults = results.subList(startIndex, endIndex); %>
 <body>
-<div class="container">
-    <ul class="list">
-<% for (String result : currentPageResults) { %>
-<li class="item">
-    <h2>
-        <a href="<%=result%>"><%=result%> </a> </h2>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-        Donec vel enim ut mauris bibendum bibendum.
-        Sed eget ipsum quis ipsum lacinia tincidunt. Nulla facilisi</p>
-</li>
-<% } %>
-    </ul>
+<div class="main">
+    <header>
+        <div class="top_header">
+            <div id="logo"><img src="google.png" alt="logo">
+            </div>
+        </div>
+    </header>
+    <div class="body">
+        <p>About 77,200,000 results (0.43 seconds)</p>
+        <div id="results">
+            <% for (String result : currentPageResults) { %>
+            <div class="first_result">
+                <div class="text_with_arrow_down">
+                    <i class="fas fa-angle-down"></i>
+                </div>
+
+                <a href="<%=result%>" id="<%=result%>"> </a>
+                <p>TO CREATE A WEBSITE WITH WORDPRESS (OR JOOMLA & DRUPAL), USE ONE CLICK INSTALLATION: Log in to your hosting account. Go to your control panel. Look for the “WordPress” or “Website” icon. Choose the domain where you want to install your website.</p>
+
+                <script>
+                    const url = "<%=result%>";
+                    fetch(url)
+                        .then(response => response.text())
+                        .then(data => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(data, 'text/html');
+                            const title = doc.querySelector('title').innerText;
+                            document.getElementById('<%=result%>').textContent = title;
+                        })
+                        .catch(error => console.error(error));
+                </script>
+
+            </div>
+            <% } %>
+        </div>
+    </div>
 </div>
 <div class="pagination">
-<% for (int i = 1; i <= totalPages; i++) { %>
-<a href="ResultsPage.jsp?page=<%=i%>"><%= i %></a>
-<% } %>
+    <% for (int i = 1; i <= totalPages; i++) { %>
+    <a href="ResultsPage.jsp?page=<%=i%>"><%= i %></a>
+    <% } %>
 </div>
 </body>
 </html>

@@ -72,6 +72,7 @@ public class Crawler implements Runnable{
                 {
                     Document doc = Jsoup.connect(head).get();
                     Elements links = doc.select("a[href]");
+                    label1:
                     for(Element link:links)
                     {
 
@@ -82,7 +83,7 @@ public class Crawler implements Runnable{
                         for(String ext:extensions) //chcecking if the URL is a media file
                         {
                             if(LinkURL.endsWith(ext))
-                                continue;
+                                continue label1;
                         }
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
                         String HashedURL=VisitedURLsContentHash.get(hash);
@@ -118,12 +119,12 @@ public class Crawler implements Runnable{
     }
 
     private void checkIfInterrupted()   {
-        while (isPaused.get()) {
+        while (isPaused.get())
+        {
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
+            catch (InterruptedException e) {}
         }
     }
 
@@ -134,12 +135,11 @@ public class Crawler implements Runnable{
             Scanner scanner = new Scanner(new URL(robotsUrl).openStream());
             String userAgent = "User-agent: *";
             boolean matched = false;
-            while (scanner.hasNextLine()) {
+            while (scanner.hasNextLine())
+            {
                 String line = scanner.nextLine();
                 if (line.startsWith("User-agent"))
-                {
                     matched = line.equals(userAgent);
-                }
                 if (matched && line.startsWith("Disallow:"))
                 {
                     String path = line.substring("Disallow:".length()).trim();
@@ -204,6 +204,5 @@ public class Crawler implements Runnable{
         pageRanker.IndexPageRankScores();
         Mongo dbMan=new Mongo();
         dbMan.closeConnection();
-
     }
 }

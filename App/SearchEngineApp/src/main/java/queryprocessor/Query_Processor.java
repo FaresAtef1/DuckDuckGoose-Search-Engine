@@ -10,22 +10,21 @@ import java.util.*;
 
 public class Query_Processor {
     public List<String> RetrieveResults(String userQuery) {
-        String input = userQuery;
-        List<String> words = Indexer.Query_Processing(input);
-        for (int i = 0; i < words.size(); i++)
-            words.set(i, Indexer.Stem(words.get(i)));
+        List<String> Original_Text = Indexer.Query_Processing(userQuery);
+        List<String> words = new ArrayList<>();
+        for (String s : Original_Text) words.add(Indexer.Stem(s));
         if (words.isEmpty())
             return null;
         List<Document> queries = new ArrayList<>();
         for (String word : words)
             queries.add(new Document("stemmedWord", word));
         Document query = new Document("$or", queries); // Combine queries with logical OR
-        Mongo dbMan = new Mongo();
+        Mongo dbMan = new Mongo();//////////////////////////////////
         List<Document> distinctValues = new ArrayList<>();
         distinctValues = dbMan.ExecuteQuery(query, "Indexer");
         if (distinctValues.isEmpty())
-            System.out.println("No results found");
-        List<String> Results = Ranker.Rank(distinctValues, words);
+            return null;
+        List<String> Results = Ranker.Rank(distinctValues, Original_Text);
         dbMan.closeConnection();
         return Results;
     }
