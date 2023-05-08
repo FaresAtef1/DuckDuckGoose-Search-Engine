@@ -3,13 +3,12 @@ package engine.app;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import queryprocessor.Query_Processor;
-import structures.pair;
 import queryprocessor.WebpageParagraphScraper;
 @WebServlet(name = "appServlet", value = "/app-servlet")
+
 public class MainApp extends HttpServlet {
     private String message;
 
@@ -30,6 +29,8 @@ public class MainApp extends HttpServlet {
         {
             paragraphs=WebpageParagraphScraper.Scraper(URLs,query,titles);
         }
+        if(paragraphs==null)
+            paragraphs= new ArrayList<String>() ;
         System.out.println("Num of results : "+URLs.size());
         request.setAttribute("results", URLs);
         request.setAttribute("titles", titles);
