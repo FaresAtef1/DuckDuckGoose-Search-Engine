@@ -89,9 +89,7 @@ public class PageRanker {
     public void IndexPageRankScores() {
         List<org.bson.Document> documents= new ArrayList<>();
         for(Map.Entry<String, Double> entry : PageRankScores.entrySet())
-        {
             documents.add(new org.bson.Document("DocURL",entry.getKey()).append("PageRankScore",entry.getValue()));
-        }
         Mongo mongo = new Mongo();
         mongo.updateCollection("PageRankScores",documents);
     }

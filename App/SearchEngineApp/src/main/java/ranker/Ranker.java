@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class Ranker {
     private static final double W1= 0.5; //TF_IDF weight
     private static final double W2= 0.5; // PageRank weight
@@ -76,11 +75,6 @@ public class Ranker {
                 .sorted(Map.Entry.<String,Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
                 .toList();
-
-
-
-
         return FinalResult;
     }
-
 }

@@ -23,4 +23,6 @@
 - [x] Save CrawledNum
 - [x] Copy the contents before saving
 - [x] Remove inLinks
-- [] include phrase searching & fix robots
+- [ ] include phrase searching & fix robots
+- [ ] ads in web interface
+- [ ] phrase searching ranking
