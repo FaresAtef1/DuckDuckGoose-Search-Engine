@@ -20,7 +20,7 @@ body {
 header {
     position: fixed;
     top: 0;
-    height: 120px;
+    height: 70px;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -233,6 +233,14 @@ header {
     align-items: center;
     margin-bottom: 20px;
 }
+.h2{
+    color: blue;
+}
+a{
+    color: green;
+    font-size: 20px;
+}
+
 .text_view {
     width: 100%;
     display: flex;
@@ -417,3 +425,4 @@ footer {
         display: none;
     }
 }
+

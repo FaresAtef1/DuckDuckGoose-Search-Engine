@@ -10,9 +10,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Ranker {
-    private static final double W1= 0.5; //TF_IDF weight
-    private static final double W2= 0.5; // PageRank weight
-    private static final double W3= 1.5;// Exact match weight
+    private static final double W1= 0.8; //TF_IDF weight
+    private static final double W2= 0.2; // PageRank weight
+    private static final double W3= 10;// Exact match weight
     private static final double W4= 10;// Query word is in the url
     private static final double W5= 4;// Query word is in the title
     private static final double W6= 1;// Query word is in the body

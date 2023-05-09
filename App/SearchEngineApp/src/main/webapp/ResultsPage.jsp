@@ -31,11 +31,11 @@
 <div class="main">
     <header>
         <div class="top_header">
-            <div id="logo"><img src="css/Your_paragraph_text__3_-removebg.png" alt="logo">
+            <div id="logo"><img src="css/crop.png" alt="logo" style="height: 50px;width: 90px">
             </div>
         </div>
     </header>
-    <div class="body">
+    <div class="body" style="font-family: arial,sans-serif;">
         <p>About 77,200,000 results (0.43 seconds)</p>
         <div id="results">
             <% for (int i=0;i<results.size();i++) { %>
@@ -43,9 +43,9 @@
                 <div class="text_with_arrow_down">
                     <i class="fas fa-angle-down"></i>
                 </div>
-                <a href="<%=results.get(i)%>" id="<%=results.get(i)%>"><%=results.get(i)%></a>
-                <p><%=titles.get(i)%></p>
-                <p><%=paragraphs.get(i)%></p>
+                <a href="<%=results.get(i)%>"><h2 style="color: #2323a2;font-size: 20px;"> <%=titles.get(i)%></h2> </a>
+                <a href="<%=results.get(i)%>" id="<%=results.get(i)%>" style="color: green;font-size: 16px;"><%=results.get(i)%></a>
+                <p style="color: grey;font-size: 16px;"><%=paragraphs.get(i)%></p>
             </div>
             <% } %>
         </div>
