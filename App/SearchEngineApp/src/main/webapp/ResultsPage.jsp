@@ -1,15 +1,9 @@
 <%@ page import="java.util.List" %>
-<%@ page import="java.net.URL" %>
-<%@ page import="java.net.URLConnection" %>
-<%@ page import="java.io.BufferedReader" %>
-<%@ page import="java.io.InputStreamReader" %>
-<%@ page import="structures.pair" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     List<String> results = (List<String>) session.getAttribute("results");
     List<String> titles = (List<String>) session.getAttribute("titles");
     List<String> paragraphs = (List<String>) session.getAttribute("paragraphs");
-//    List<pair<String,String>> results2 = (List<pair<String,String>>) session.getAttribute("out");
 %>
 <!DOCTYPE html>
 <html lang="en">

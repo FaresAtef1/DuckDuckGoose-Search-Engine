@@ -2,8 +2,11 @@ package database;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.bulk.BulkWriteResult;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.InsertOneModel;
 import org.bson.Document;
 
 import javax.print.Doc;
@@ -22,7 +25,6 @@ public class Mongo {
     {
         if(isConnectionEstablished)
             return;
-
         String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
         mongoClientURI = new MongoClientURI(URL);
         mongoClient = new MongoClient(mongoClientURI);
@@ -44,6 +46,7 @@ public class Mongo {
         database.createCollection("PageRankScores");
         database.createCollection("Indexer");
         database.createCollection("SearchHistory");
+//        database.createCollection("Snippets");
     }
 
     public void DropCollections()
@@ -62,6 +65,8 @@ public class Mongo {
         collection.drop();
         collection=database.getCollection("SearchHistory");
         collection.drop();
+//        collection=database.getCollection("Snippets");
+//        collection.drop();
     }
 
     public void SaveCrawlerState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks, ConcurrentHashMap<String,String> VisitedURLsContentHash , ConcurrentLinkedQueue<String> DisallowedURLs)
@@ -113,6 +118,7 @@ public class Mongo {
 //          collection.insertMany(Documents5);
     }
 
+
     public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks ,ConcurrentHashMap<String,String> VisitedURLsContentHash ,ConcurrentLinkedQueue<String> DisallowedURLs)
     {
         MongoCollection<org.bson.Document> collection = database.getCollection("URLsToCrawl");
@@ -160,14 +166,34 @@ public class Mongo {
     public void updateCollection(String collectionName , List<Document> documents)
     {
         MongoCollection<Document> collection = database.getCollection(collectionName);
-        collection.drop();
+        List<InsertOneModel<Document>> insertOps = new ArrayList<>();
+        for (Document document : documents) {
+            insertOps.add(new InsertOneModel<>(document));
+        }
+
+// create bulk write request
+        BulkWriteOptions options = new BulkWriteOptions().ordered(false);
+        BulkWriteResult result = collection.bulkWrite(insertOps, options);
+    }
+    public void AddToCollection(String collectionName , List<Document> documents)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertMany(documents);
+    }
+    public void AddOneDoc(String collectionName , Document doc)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.insertOne(doc);
     }
 
     public static void main(String[] args)
     {
         Mongo mon=new Mongo();
 //        database.createCollection("Indexer");
-        mon.mongotest();
+//        mon.mongotest();
+//        database
+        MongoCollection<org.bson.Document> collection=database.getCollection("Indexer");
+        collection.drop();
+
     }
 }

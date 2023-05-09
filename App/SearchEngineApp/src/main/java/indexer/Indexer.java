@@ -1,5 +1,6 @@
 package indexer;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -33,6 +34,17 @@ public class Indexer {
         Text=DocumentCleaner.RemoveSpecialCharacters(Text);
         Text=SWRemover.RemoveStopWords(Text);
         return  Text;
+    }
+
+    public static List<pair<String,String>> GetLeaves(Document doc) {
+        List<pair<String,String>> Leaves=new ArrayList<>();
+        Elements elements=doc.select("*");
+        for (Element element : elements) {
+            String []words= element.text().split(" ");
+            if (element.children().size() == 0 && words.length > 3 && !element.tagName().equals("script") && !element.tagName().equals("style") && !element.tagName().equals("noscript") && !element.tagName().equals("meta") && !element.tagName().equals("link") && !element.tagName().equals("em"))
+                Leaves.add(new pair<>(element.tagName(), element.text()));
+        }
+        return Leaves;
     }
 
     public static List<pair<String,String>> Normalize(Document doc)

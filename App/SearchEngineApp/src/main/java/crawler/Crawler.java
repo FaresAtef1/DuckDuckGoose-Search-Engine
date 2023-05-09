@@ -29,11 +29,11 @@ public class Crawler implements Runnable{
     private  ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
-
+//    InvertedFileBuilder invertedFileBuilder;
     private  List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
 
     private static Mongo dbMan ;
-    final int MAX_VALUE = 400;
+    final int MAX_VALUE = 50;
 
     private static final int StateSize = 25;
 
@@ -45,22 +45,22 @@ public class Crawler implements Runnable{
         DisallowedURLs=new ConcurrentLinkedQueue <>();
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
+//        invertedFileBuilder= new InvertedFileBuilder(new HashSet<>());
 //        URLsToCrawl.add("https://www.bbc.com");
-//        URLsToCrawl.add(BaseURL);
-//        String Hash=getContentHashFromURL(BaseURL);
-//        VisitedURLsContentHash.put(Hash,BaseUrl);
+        URLsToCrawl.add(BaseURL);
+        String Hash=getContentHashFromURL(BaseURL);
+        VisitedURLsContentHash.put(Hash,BaseUrl);
 //        Hash= getContentHashFromURL("https://www.bbc.com");
 //        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
         dbMan=new Mongo();
-        dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
-        CrawledNum.set(outLinks.size());
+//        dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
+//        CrawledNum.set(outLinks.size());
     }
 
 
     public void run() {
         while(CrawledNum.get()<MAX_VALUE)
         {
-
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
@@ -71,11 +71,11 @@ public class Crawler implements Runnable{
                 try
                 {
                     Document doc = Jsoup.connect(head).get();
+//                    invertedFileBuilder.InvertOne(doc,head);
                     Elements links = doc.select("a[href]");
                     label1:
                     for(Element link:links)
                     {
-
                         checkIfInterrupted();
                         if(CrawledNum.get()>=MAX_VALUE)
                             return;
@@ -188,17 +188,18 @@ public class Crawler implements Runnable{
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.bbc.com/");
         Thread[] threads = new Thread[8];
-        for (int i = 0; i <4; i++)
+        for (int i = 0; i <8; i++)
         {
             threads[i] = new Thread(crawler);
             threads[i].setName(String.valueOf(i));
             threads[i].start();
         }
-        for(int i=0;i<4;i++)
+        for(int i=0;i<8;i++)
             threads[i].join();
 
         InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());
         builder.Build();
+//        crawler.invertedFileBuilder.Index();
         PageRanker pageRanker = new PageRanker(crawler.outLinks);
         pageRanker.CalculatePageRanks();
         pageRanker.IndexPageRankScores();

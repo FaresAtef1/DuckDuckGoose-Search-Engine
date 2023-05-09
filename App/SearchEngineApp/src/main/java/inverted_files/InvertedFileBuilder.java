@@ -3,10 +3,8 @@ package inverted_files;
 import database.Mongo;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 import java.io.IOException;
 import java.util.*;
-
 import indexer.*;
 import structures.pair;
 
@@ -21,14 +19,20 @@ public class InvertedFileBuilder {
     {
         this.URLs= URLs;
         postingRanks.put("title", 0);
+        postingRanks.put("label", 0);
         postingRanks.put("h1", 1);
         postingRanks.put("h2", 2);
+        postingRanks.put("p", 2);
+        postingRanks.put("span", 2);
+        postingRanks.put("div", 2);
+        postingRanks.put("li", 2);
+        postingRanks.put("a", 2);
         postingRanks.put("h3", 3);
         postingRanks.put("h4", 4);
         postingRanks.put("h5", 5);
         postingRanks.put("h6", 6);
         postingRanks.put("body", 7);
-        postingRanks.put("label", 0);
+        //////////////////////////////// remaining tags
     }
 
     private void Invert()
@@ -125,11 +129,16 @@ public class InvertedFileBuilder {
             if (wordData!=null)
             {
                 wordData.first = wordData.first + 1;
-                if(postingRanks.get(wordData.second)> postingRanks.get(id.second))
-                    wordData.second=id.second;
+                if(postingRanks.containsKey(id.second))
+                    if(postingRanks.get(wordData.second)> postingRanks.get(id.second))
+                        wordData.second=id.second;
             }
-            else
+            else /// remove after assigning all tags scores
+            {
                 wordData = new pair<>(1.0, id.second);
+                if(!postingRanks.containsKey(id.second))
+                    postingRanks.put(id.second, 3);
+            }
             wordCounts.put(id.first, wordData);
         }
         for(Map.Entry<Integer, pair<Double, String>> word : wordCounts.entrySet())
@@ -151,5 +160,21 @@ public class InvertedFileBuilder {
                 postings.put(record.getKey(), postingList);
             }
         }
+    }
+
+//    public void InvertOne(Document doc,String URL)
+//    {
+////        List<pair<pair<String,Integer>, String>> tokens = Indexer.Normalize(doc); //word, index of the tag and tag name
+////        List<pair<Integer, String>> tokensIds = convertTokensToIds(tokens);
+//        Map<Integer, pair<Double, String>> WordsCounts = wordCounts(tokensIds);
+//        addToPostings(URL, WordsCounts);
+//    }
+
+    public static void main (String[] args)
+    {
+        Set<String>URLs = new HashSet<>();
+        URLs.add("https://www.bbc.com/");
+        InvertedFileBuilder inv= new InvertedFileBuilder(URLs);
+        inv.Build();
     }
 }
