@@ -36,15 +36,12 @@ public class MainApp extends HttpServlet {
 //        System.out.println("Num of results : "+URLs.size());
         int EndTime=(int)System.currentTimeMillis();
         float Time= (float) ((EndTime-StartTime)/1000.0);
-        request.setAttribute("results", URLs);
-        request.setAttribute("titles", titles);
-        request.setAttribute("paragraphs", paragraphs);
-        request.setAttribute("runtime", Time);
         HttpSession session = request.getSession();
         session.setAttribute("results",URLs);
         session.setAttribute("titles",titles);
         session.setAttribute("paragraphs",paragraphs);
         session.setAttribute("runtime",Time);
+        session.setAttribute("query",query);
 //        RequestDispatcher  dispatcher = request.getRequestDispatcher("ResultsPage.jsp?page=1");
 //        try {
 //            dispatcher.forward(request, response);

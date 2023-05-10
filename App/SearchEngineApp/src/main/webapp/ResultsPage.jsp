@@ -4,6 +4,7 @@
     List<String> results = (List<String>) session.getAttribute("results");
     List<String> titles = (List<String>) session.getAttribute("titles");
     List<String> paragraphs = (List<String>) session.getAttribute("paragraphs");
+    String query =(String)session.getAttribute("query");
     float runtime = (float) session.getAttribute("runtime");
 %>
 <!DOCTYPE html>
@@ -25,8 +26,12 @@
 <div class="main">
     <header>
         <div class="top_header">
-            <div id="logo"><img src="css/crop.png" alt="logo" style="height: 50px;width: 90px">
-            </div>
+            <a href="index.jsp">
+            <div id="logo"><img src="css/crop.png" alt="logo" style="height: 50px;width: 90px"></div>
+            </a>
+            <label>
+                <input type="text" value="<%=query%>" readonly style="padding: 8px 12px; font-size: 16px; border: 1px solid #dfe1e5; border-radius: 24px; background-color: #f2f2f2;">
+            </label>
         </div>
     </header>
     <div class="body" style="font-family: arial,sans-serif;">
