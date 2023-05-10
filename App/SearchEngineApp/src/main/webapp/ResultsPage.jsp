@@ -4,6 +4,7 @@
     List<String> results = (List<String>) session.getAttribute("results");
     List<String> titles = (List<String>) session.getAttribute("titles");
     List<String> paragraphs = (List<String>) session.getAttribute("paragraphs");
+    float runtime = (float) session.getAttribute("runtime");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +17,6 @@
 <% int itemsPerPage = 10; %>
 <% int totalItems = results.size(); %>
 <% int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage); %>
-
 <% int currentPage = Integer.parseInt(request.getParameter("page")); %>
 <% int startIndex = (currentPage - 1) * itemsPerPage; %>
 <% int endIndex = Math.min(startIndex + itemsPerPage, totalItems); %>
@@ -30,7 +30,7 @@
         </div>
     </header>
     <div class="body" style="font-family: arial,sans-serif;">
-        <p>About 77,200,000 results (0.43 seconds)</p>
+        <p>About <%=results.size()%> results (<%=runtime%> seconds)</p>
         <div id="results">
             <% for (int i=0;i<results.size();i++) { %>
             <div class="first_result">

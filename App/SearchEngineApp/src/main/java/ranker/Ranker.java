@@ -19,11 +19,12 @@ public class Ranker {
 
     private static final double[] headingWeights = {2, 1.5, 1.25, 1.125, 1.0625, 1.03125};
 
-    public static List<String> Rank(List<Document> documents, List<String> originalQuery) {
+    public static List<String> Rank(List<Document> documents, List<String> originalQuery,Map<String,List<Integer>> URLTagsIndices) {
         Map<String , Double> result=new HashMap<>();
         Mongo dbManager = new Mongo();
         List<Document> pageRankScores=new ArrayList<>();
         List<Document> queries=new LinkedList<>();
+//        URLTagsIndices=new HashMap<>();
         for (Document doc : documents)
         {
             List<Document> actualWords=doc.getList("postings",Document.class);
@@ -31,7 +32,8 @@ public class Ranker {
                 String actualWord = actualWordDoc.getString("actualWord");
                 double IDF = actualWordDoc.getDouble("IDF");
                 List<Document> postings = actualWordDoc.getList("postings", Document.class);
-                for (Document posting : postings) {
+                for (Document posting : postings)
+                {
                     String DocURL = posting.getString("DocURL");
                     double TF = posting.getDouble("tf");
                     double TF_IDF = (originalQuery.contains(actualWord) ? W3 : W1) * TF * IDF;
@@ -59,6 +61,19 @@ public class Ranker {
                         result.put(DocURL, oldTF_IDF + TF_IDF);
                     } else
                         result.put(DocURL, TF_IDF);
+                    List<Document> tagslist = posting.getList("TagsList", Document.class);
+                    for (Document tag : tagslist) {
+                        int tagindex = (int) tag.get("TagIndex");
+                        List<Integer> indices = URLTagsIndices.get(DocURL);
+                        if(indices==null)
+                        {
+                            indices=new ArrayList<>();
+                            indices.add(tagindex);
+                            URLTagsIndices.put(DocURL,indices);
+                        }
+                        else
+                            indices.add(tagindex);
+                    }
                 }
             }
         }

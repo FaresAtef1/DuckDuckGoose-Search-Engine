@@ -3,9 +3,7 @@ package indexer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import database.Mongo;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -40,49 +38,49 @@ public class Indexer {
         List<pair<String,String>> Leaves=new ArrayList<>();
         Elements elements=doc.select("*");
         for (Element element : elements) {
-            String []words= element.text().split(" ");
+        String []words= element.text().split(" ");
             if (element.children().size() == 0 && words.length > 3 && !element.tagName().equals("script") && !element.tagName().equals("style") && !element.tagName().equals("noscript") && !element.tagName().equals("meta") && !element.tagName().equals("link") && !element.tagName().equals("em"))
                 Leaves.add(new pair<>(element.tagName(), element.text()));
         }
         return Leaves;
     }
 
-    public static List<pair<String,String>> Normalize(Document doc)
+    public static List<pair<pair<String,Integer>,String>> Normalize(Document doc,String URL)
     {
-        //Elements htmlElements = doc.select("title,label,h1,h2,h3,h4,h5,h6,body");
-        //Elements htmlElements = doc.select("body:not(:has(h1, h2, h3, h4, h5, h6))");
-        Elements htmlElements = doc.select("body");
-        Elements elementsToRemove = htmlElements.select("title,label,h1,h2,h3,h4,h5,h6");
-        List<pair<String,String>> tokens = new LinkedList<>();
-        Tokenize(elementsToRemove,tokens);
-        for (Element element : elementsToRemove)
-            element.remove();
-        Tokenize(htmlElements,tokens);
+        List<pair<String,String>> Leaves=GetLeaves(doc);
+        List<pair<pair<String,Integer>,String>> tokens = new LinkedList<>(); //word, index of the tag and tag name
+        Tokenize(Leaves,tokens,URL);
         return tokens;
     }
 
     public static String Stem(String word)
     {
+        if(word.length()==0)
+            return word;
         stemmer.setCurrent(word);
         stemmer.stem();
         word=stemmer.getCurrent();
         return word;
     }
 
-
-    public static void Tokenize (Elements elementsToRemove,List<pair<String,String>> tokens){
+    public static void Tokenize (List<pair<String,String>> elements,List<pair<pair<String,Integer>,String>> tokens,String URL){
+        List<org.bson.Document> queries = new ArrayList<>();
         String Text;
-        for (Element e : elementsToRemove)
+        for (int i=0;i<elements.size();i++)
         {
-            Text=e.text();
+            Text=elements.get(i).second;
+            queries.add(new org.bson.Document("URL",URL).append("TagIndex", i).append("Text", Text));
             Text=Clean(Text);
             for(String word: Text.split("\\s+"))
             {
                 if (!word.matches("[a-z0-9]+"))
                     continue;
-                tokens.add(new pair<>(word, e.tagName()));
+                tokens.add(new pair<>(new pair<>(word,i), elements.get(i).first)); //word, index of the tag and tag name
             }
         }
+        Mongo mongo = new Mongo();
+        if(queries.size()>0)
+            mongo.AddToCollection("Snippets",queries);
     }
 
     public static List <String> Query_Processing(String Query){

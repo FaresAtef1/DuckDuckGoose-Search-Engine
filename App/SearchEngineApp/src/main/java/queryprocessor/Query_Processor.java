@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 public class Query_Processor {
-    public List<String> RetrieveResults(String userQuery) {
+    public List<String> RetrieveResults(String userQuery,Map<String,List<Integer>>URLTagIndices) {
         List<String> Original_Text = Indexer.Query_Processing(userQuery);
         List<String> words = new ArrayList<>();
         for (String s : Original_Text) words.add(Indexer.Stem(s));
@@ -25,19 +25,19 @@ public class Query_Processor {
         distinctValues = dbMan.ExecuteQuery(query, "Indexer");
         if (distinctValues.isEmpty())
             return null;
-        List<String> Results = Ranker.Rank(distinctValues, Original_Text);
-
+//        URLTagIndices=new HashMap<>();
+        List<String> Results = Ranker.Rank(distinctValues, Original_Text,URLTagIndices);
         dbMan.closeConnection();
         return Results;
     }
 
     public static void main(String[] args) throws IOException {
-        Scanner input = new Scanner(System.in);
-        Query_Processor qp = new Query_Processor();
-        String query = input.nextLine();
-        List<String> results = qp.RetrieveResults(query);
-        List<String> titles = new ArrayList();
-        List<String> paragraphs =WebpageParagraphScraper.Scraper(results,query,titles);
+//        Scanner input = new Scanner(System.in);
+//        Query_Processor qp = new Query_Processor();
+//        String query = input.nextLine();
+//        List<String> results = qp.RetrieveResults(query);
+//        List<String> titles = new ArrayList();
+//        List<String> paragraphs =WebpageParagraphScraper.Scraper(results,query,titles);
 
     }
 }

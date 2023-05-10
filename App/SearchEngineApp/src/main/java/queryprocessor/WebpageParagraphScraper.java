@@ -1,74 +1,52 @@
 package queryprocessor;
+import database.Mongo;
+import org.bson.Document;
+
 import java.io.IOException;
 import java.util.*;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 public class WebpageParagraphScraper {
-    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles) throws IOException {
-        Map<String, Integer> TagScore = new HashMap<>();
-        TagScore.put("title", 0);
-        TagScore.put("h1", 1);
-        TagScore.put("h2", 2);
-        TagScore.put("h3", 3);
-        TagScore.put("h4", 4);
-        TagScore.put("h5", 5);
-        TagScore.put("h6", 6);
-        TagScore.put("meta", 1);
-        TagScore.put("p", 3);
-        TagScore.put("th", 1);
-        TagScore.put("td", 3);
-        TagScore.put("li", 3);
-        TagScore.put("a", 2);
-        String[] query = Query.split(" ");
-//        titles=new ArrayList<>();
-        List<String> paragraphs=new ArrayList<>();
-        for (String url : URLs) {
-            Document doc = Jsoup.connect(url).get();
-            String title = doc.title();
-            Elements elements = doc.select("p,li,td,th,h1,h2,h3,h4,h5,h6,a,meta");
-            String bestParagraph = null;
-            int bestScore = -1;
-            String bestTag = null;
-            for (org.jsoup.nodes.Element element : elements) {
-                if (element.tagName().equals("body") || (element.tagName().equals("meta") && !element.attr("name").equals("description")))
-                    continue;
-                String paragraph = element.text();
-                int score = 0;
-                for (String s : query)
-                    if (paragraph.toLowerCase().contains(s.toLowerCase()))
-                        score++;
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestParagraph = paragraph;
-                    bestTag = element.tagName();
-                } else if (score == bestScore)
-                    if (TagScore.get(element.tagName()) < TagScore.get(bestTag)) {
-                        bestParagraph = paragraph;
-                        bestTag = element.tagName();
-                    }
+    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles,Map<String,List<Integer>>URLTagsIndices) throws IOException {
+        List<String> paragraphs = new ArrayList<>();
+        Mongo mon=new Mongo();
+        for(String URL:URLs)
+        {
+            HashMap<Integer,Integer>MF=new HashMap<>();
+            List<Integer>Indices=URLTagsIndices.get(URL);
+            for(Integer i:Indices)
+            {
+                if(MF.containsKey(i))
+                    MF.put(i,MF.get(i)+1);
+                else
+                    MF.put(i,1);
             }
-            System.out.println(title);
-            if (bestParagraph == null) {
-                System.out.println("No paragraph found");
-                break;
+            int maxval=-1;
+            int maxindex=-1;
+            for(Map.Entry<Integer,Integer> entry:MF.entrySet())
+            {
+                if(entry.getValue()>maxval)
+                {
+                    maxval=entry.getValue();
+                    maxindex=entry.getKey();
+                }
             }
-            String[] bestParagraphArray = bestParagraph.split(" ");
-            for (int i = 0; i < bestParagraphArray.length; i++) {
-                for (String s : query)
-                    if (bestParagraphArray[i].toLowerCase().contains(s.toLowerCase())) {
-                        bestParagraphArray[i] = "<b>" + bestParagraphArray[i] + "</b>";
-                        break;
-                    }
-            }
-            StringBuilder sb = new StringBuilder();
-            for (String str : bestParagraphArray) {
-                sb.append(str);
-                sb.append(" ");
-            }
-            titles.add(title);
-            paragraphs.add(sb.toString());
+            List<Document> doc1=mon.ExecuteQuery(new Document("URL",URL).append("TagIndex",maxindex),"Snippets");
+            List<Document> doc2=mon.ExecuteQuery(new Document("URL",URL),"Titles");
+            if(doc1.size()>1||doc2.size()>0)
+                System.out.println("Error");
+//            String Title=doc2.get(0).getString("Title");
+//            if(Title==)
+            paragraphs.add(doc1.get(0).getString("Text"));
+            titles.add(doc2.get(0).getString("Title"));
+        }
+        for(int j=0;j< paragraphs.size();j++)
+        {
+            String [] words= paragraphs.get(j).split(" ");
+            for(int i=0;i< words.length;i++)
+                for(String q:Query.split(" "))
+                    if(words[i].toLowerCase().contains(q.toLowerCase()))
+                        words[i] = "<b>" + words[i] + "</b>";
+            paragraphs.set(j,String.join(" ",words));
         }
         return paragraphs;
     }

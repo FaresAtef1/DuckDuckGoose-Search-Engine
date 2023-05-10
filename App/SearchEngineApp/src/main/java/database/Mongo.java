@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Mongo {
-    private static MongoClientURI mongoClientURI;
+    private  MongoClientURI mongoClientURI;
     private static MongoClient mongoClient;
     private static MongoDatabase database;
 
@@ -25,11 +25,9 @@ public class Mongo {
     {
         if(isConnectionEstablished)
             return;
-        String URL = "mongodb+srv://fares_atef:fares12fares@cluster0.u3zf1oz.mongodb.net/?retryWrites=true&w=majority";
-        mongoClientURI = new MongoClientURI(URL);
-        mongoClient = new MongoClient(mongoClientURI);
-        database = mongoClient.getDatabase("myFirstDatabase");
         isConnectionEstablished = true;
+        mongoClient = new MongoClient("localhost", 27017);
+        database = mongoClient.getDatabase("test");
     }
 
     public void  closeConnection()
@@ -45,7 +43,9 @@ public class Mongo {
         database.createCollection("DisallowedURLs");
         database.createCollection("PageRankScores");
         database.createCollection("Indexer");
-        database.createCollection("SearchHistory");
+        database.createCollection("Snippets");
+        database.createCollection("Titles");
+//        database.createCollection("SearchHistory");
 //        database.createCollection("Snippets");
     }
 
@@ -63,8 +63,12 @@ public class Mongo {
         collection.drop();
         collection=database.getCollection("Indexer");
         collection.drop();
-        collection=database.getCollection("SearchHistory");
+        collection=database.getCollection("Snippets");
         collection.drop();
+        collection=database.getCollection("Titles");
+        collection.drop();
+//        collection=database.getCollection("SearchHistory");
+//        collection.drop();
 //        collection=database.getCollection("Snippets");
 //        collection.drop();
     }
@@ -192,8 +196,9 @@ public class Mongo {
 //        database.createCollection("Indexer");
 //        mon.mongotest();
 //        database
-        MongoCollection<org.bson.Document> collection=database.getCollection("Indexer");
-        collection.drop();
-
+//        MongoCollection<org.bson.Document> collection=database.getCollection("Indexer");
+//        collection.drop();
+//        mon.CreateCollections();
+        mon.CreateCollections();
     }
 }

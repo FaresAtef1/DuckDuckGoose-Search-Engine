@@ -36,8 +36,8 @@ public class testMD5 {
     }
 
     public static void main (String[] args) throws InterruptedException, MalformedURLException {
-        String url1="https://web.archive.org/web/20190314025235/https://www.geeksforgeeks.org/lower-and-upper-bound-theory/";
-        String url2="https://web.archive.org/web/20200229205039/https://www.geeksforgeeks.org/lower-and-upper-bound-theory/";
+        String url1="https://www.bbc.co.uk/search?q=&d=HOMEPAGE_GNL";
+        String url2="https://www.bbc.co.uk/search?d=HOMEPAGE_PS";
         String hash1=getContentHashFromURL(url1);
         Thread.sleep(4000);
         String hash2=getContentHashFromURL(url2);
