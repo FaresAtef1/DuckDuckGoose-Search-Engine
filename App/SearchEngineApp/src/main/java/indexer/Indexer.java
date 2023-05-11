@@ -26,7 +26,7 @@ public class Indexer {
         System.out.println(text);
     }
 
-    private static String Clean(String Text)
+    private  String Clean(String Text)
     {
         Text=Text.toLowerCase();
         Text=DocumentCleaner.RemoveSpecialCharacters(Text);
@@ -34,7 +34,7 @@ public class Indexer {
         return  Text;
     }
 
-    public static List<pair<String,String>> GetLeaves(Document doc) {
+    public  List<pair<String,String>> GetLeaves(Document doc) {
         List<pair<String,String>> Leaves=new ArrayList<>();
         Elements elements=doc.select("*");
         for (Element element : elements) {
@@ -45,7 +45,7 @@ public class Indexer {
         return Leaves;
     }
 
-    public static List<pair<pair<String,Integer>,String>> Normalize(Document doc,String URL)
+    public  List<pair<pair<String,Integer>,String>> Normalize(Document doc,String URL)
     {
         List<pair<String,String>> Leaves=GetLeaves(doc);
         List<pair<pair<String,Integer>,String>> tokens = new LinkedList<>(); //word, index of the tag and tag name
@@ -53,7 +53,7 @@ public class Indexer {
         return tokens;
     }
 
-    public static String Stem(String word)
+    public  String Stem(String word)
     {
         if(word.length()==0)
             return word;
@@ -63,7 +63,7 @@ public class Indexer {
         return word;
     }
 
-    public static void Tokenize (List<pair<String,String>> elements,List<pair<pair<String,Integer>,String>> tokens,String URL){
+    public  void Tokenize (List<pair<String,String>> elements,List<pair<pair<String,Integer>,String>> tokens,String URL){
         List<org.bson.Document> queries = new ArrayList<>();
         String Text;
         for (int i=0;i<elements.size();i++)
@@ -83,7 +83,7 @@ public class Indexer {
             mongo.AddToCollection("Snippets",queries);
     }
 
-    public static List <String> Query_Processing(String Query){
+    public  List <String> Query_Processing(String Query){
         String Text=Query;
         List<String> Out = new LinkedList<>();
         Text=Clean(Text);
