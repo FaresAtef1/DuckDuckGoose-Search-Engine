@@ -27,24 +27,36 @@
     <header>
         <div class="top_header">
             <a href="index.jsp">
-            <div id="logo"><img src="css/crop.png" alt="logo" style="height: 50px;width: 90px"></div>
+                <div id="logo"><img src="css/crop.png" alt="logo" style="height: 50px;width: 90px"></div>
             </a>
-            <label>
-                <input type="text" value="<%=query%>" readonly style="padding: 8px 12px; font-size: 16px; border: 1px solid #dfe1e5; border-radius: 24px; background-color: #f2f2f2;">
-            </label>
+            <form action="app-servlet" method="GET" class="searchform">
+                <fieldset>
+                    <div class="inner-form">
+                        <div class="input-field">
+                            <button class="btn-search" type="submit">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                                </svg>
+                            </button>
+                            <input id="search" type="text" value="<%=query%>" name="query"/>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
         </div>
     </header>
     <div class="body" style="font-family: arial,sans-serif;">
         <p>About <%=results.size()%> results (<%=runtime%> seconds)</p>
         <div id="results">
-            <% for (int i=0;i<results.size();i++) { %>
+            <% int k=0;
+                for (int i=startIndex;i<endIndex;i++) { %>
             <div class="first_result">
                 <div class="text_with_arrow_down">
                     <i class="fas fa-angle-down"></i>
                 </div>
-                <a href="<%=results.get(i)%>"><h2 style="color: #2323a2;font-size: 20px;"> <%=titles.get(i)%></h2> </a>
+                <a href="<%=results.get(i)%>"><h2 style="color: #2323a2;font-size: 20px;"> <%=titles.get(k)%></h2> </a>
                 <a href="<%=results.get(i)%>" id="<%=results.get(i)%>" style="color: green;font-size: 16px;"><%=results.get(i)%></a>
-                <p style="color: grey;font-size: 16px;"><%=paragraphs.get(i)%></p>
+                <p style="color: grey;font-size: 16px;"><%=paragraphs.get(k++)%></p>
             </div>
             <% } %>
         </div>
@@ -52,7 +64,7 @@
 </div>
 <div class="pagination">
     <% for (int i = 1; i <= totalPages; i++) { %>
-    <a href="ResultsPage.jsp?page=<%=i%>"><%= i %></a>
+    <a href="app-servlet?page=<%=i%>&query=<%=query%>"><%=i%></a>
     <% } %>
 </div>
 </body>

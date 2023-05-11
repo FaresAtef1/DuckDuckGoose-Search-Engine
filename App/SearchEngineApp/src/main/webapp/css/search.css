@@ -424,5 +424,18 @@ footer {
     .main {
         display: none;
     }
+
+    .top_header form .inner-form .input-field {
+        margin-bottom: 20px;
+        height: 50px;
+    }
+    .top_header form .inner-form .input-field input {
+        padding-left: 55px;
+        font-size: 16px;
+    }
+    .top_header form .inner-form .input-field .btn-search svg {
+        width: 26px;
+        height: 26px;
+    }
 }
 

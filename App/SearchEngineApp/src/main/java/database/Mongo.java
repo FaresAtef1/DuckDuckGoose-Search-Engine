@@ -169,6 +169,8 @@ public class Mongo {
     }
     public void updateCollection(String collectionName , List<Document> documents)
     {
+        if(isConnectionEstablished == false)
+            ConnectToMongo();
         MongoCollection<Document> collection = database.getCollection(collectionName);
         List<InsertOneModel<Document>> insertOps = new ArrayList<>();
         for (Document document : documents) {
@@ -181,13 +183,29 @@ public class Mongo {
     }
     public void AddToCollection(String collectionName , List<Document> documents)
     {
+        if(isConnectionEstablished == false)
+            ConnectToMongo();
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertMany(documents);
     }
     public void AddOneDoc(String collectionName , Document doc)
     {
+        if(isConnectionEstablished == false)
+            ConnectToMongo();
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertOne(doc);
+    }
+    public void ConnectToMongo()
+    {
+        try {
+            mongoClient = new MongoClient("localhost", 27017);
+            database = mongoClient.getDatabase("SearchEngine");
+            isConnectionEstablished = true;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Error in connecting to mongo");
+        }
     }
 
     public static void main(String[] args)
@@ -199,6 +217,8 @@ public class Mongo {
 //        MongoCollection<org.bson.Document> collection=database.getCollection("Indexer");
 //        collection.drop();
 //        mon.CreateCollections();
+        mon.DropCollections();
+
         mon.CreateCollections();
     }
 }

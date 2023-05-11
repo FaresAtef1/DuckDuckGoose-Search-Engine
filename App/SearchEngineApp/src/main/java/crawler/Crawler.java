@@ -29,11 +29,10 @@ public class Crawler implements Runnable{
     private  ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
     private ConcurrentLinkedQueue<String> DisallowedURLs;
-//    InvertedFileBuilder invertedFileBuilder;
-    private  List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
+    private final List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
 
     private static Mongo dbMan ;
-    final int MAX_VALUE = 200;
+    final int MAX_VALUE = 1000;
 
     private static final int StateSize = 25;
 
@@ -45,16 +44,10 @@ public class Crawler implements Runnable{
         DisallowedURLs=new ConcurrentLinkedQueue <>();
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
-//        invertedFileBuilder= new InvertedFileBuilder(new HashSet<>());
-//        URLsToCrawl.add("https://www.bbc.com");
         URLsToCrawl.add(BaseURL);
         String Hash=getContentHashFromURL(BaseURL);
         VisitedURLsContentHash.put(Hash,BaseUrl);
-//        Hash= getContentHashFromURL("https://www.bbc.com");
-//        VisitedURLsContentHash.put(Hash,"https://www.bbc.com");
         dbMan=new Mongo();
-//        dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
-//        CrawledNum.set(outLinks.size());
     }
 
 
@@ -64,23 +57,26 @@ public class Crawler implements Runnable{
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
-                checkIfInterrupted();
+//                try {
+////                    checkIfInterrupted();
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 outLinks.put(head,new HashSet<>());
                 try
                 {
                     Document doc = Jsoup.connect(head).get();
-//                    invertedFileBuilder.InvertOne(doc,head);
                     Elements links = doc.select("a[href]");
                     label1:
                     for(Element link:links)
                     {
-                        checkIfInterrupted();
+//                        checkIfInterrupted();
                         if(CrawledNum.get()>=MAX_VALUE)
                             return;
                         String LinkURL = link.absUrl("href"); // if link contains the relative URL the abs will get the complete URL
-                        for(String ext:extensions) //chcecking if the URL is a media file
+                        for(String ext:extensions) //checking if the URL is a media file
                         {
                             if(LinkURL.endsWith(ext))
                                 continue label1;
@@ -97,73 +93,71 @@ public class Crawler implements Runnable{
                             continue;
                         }
                         VisitedURLsContentHash.put(hash,LinkURL);
-                        GenerateDisAllowedURLs(LinkURL);
+//                        GenerateDisallowedURLs(LinkURL);
                         if(CrawledNum.get()<MAX_VALUE&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
                         {
-                            System.out.println(head+" Found "+Thread.currentThread().getName()+"  "+LinkURL+" ");
+                            System.out.println(CrawledNum.get()+" "+head+" Found "+Thread.currentThread().getName()+"  "+LinkURL+" ");
                             if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE)
                                 URLsToCrawl.add(LinkURL);
                         }
                     }
 
-                    if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
-                    {
-                        isPaused.set(true);
-                        dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
-                        isPaused.set(false);
-
-                    }
-                } catch (IOException | InterruptedException ignored) {}
+//                    if(CrawledNum.get()!=0&&CrawledNum.get()%StateSize==0&&Thread.currentThread().getName().equals("0"))
+//                    {
+//                        isPaused.set(true);
+//                        dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
+//                        isPaused.set(false);
+//                    }
+                } catch (IOException | InterruptedException ignored) {return;}
             }
         }
     }
 
-    private void checkIfInterrupted()   {
-        while (isPaused.get())
-        {
-            try {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException e) {}
-        }
-    }
+//    private void checkIfInterrupted() throws InterruptedException {
+//        if(isPaused.get()) {
+//            System.out.println("Crawler is paused");
+//            Thread.sleep(2000);
+//        }
+//        while (isPaused.get())
+//        {
+//            try {
+//                Thread.sleep(20);
+//            }
+//            catch (InterruptedException e) {}
+//        }
+//    }
 
-    public void GenerateDisAllowedURLs(String urlStr){
-        try{
+    public void GenerateDisallowedURLs(String urlStr) {
+        try {
             URL url = new URL(urlStr);
             String robotsUrl = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
-            Scanner scanner = new Scanner(new URL(robotsUrl).openStream());
-            String userAgent = "User-agent: *";
-            boolean matched = false;
-            while (scanner.hasNextLine())
-            {
-                String line = scanner.nextLine();
-                if (line.startsWith("User-agent"))
-                    matched = line.equals(userAgent);
-                if (matched && line.startsWith("Disallow:"))
-                {
-                    String path = line.substring("Disallow:".length()).trim();
-                    if (!path.isEmpty())
-                        DisallowedURLs.add(url.getProtocol() + "://" + url.getHost() + path);
+            try (Scanner scanner = new Scanner(new URL(robotsUrl).openStream())) {
+                String userAgent = "User-agent: *";
+                boolean matched = false;
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.startsWith("User-agent"))
+                        matched = line.equals(userAgent);
+                    if (matched && line.startsWith("Disallow:")) {
+                        String path = line.substring("Disallow:".length()).trim();
+                        if (!path.isEmpty())
+                            DisallowedURLs.add(url.getProtocol() + "://" + url.getHost() + path);
+                    }
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace(); // Print or handle the exception appropriately
         }
-        catch(IOException ignored){}
     }
-
+//
     private static String getContentHashFromURL(String input) throws InterruptedException, MalformedURLException {
         try {
-            // Get an instance of the MD5 hash algorithm
             MessageDigest md = MessageDigest.getInstance("MD5");
-
-            // Convert the input string to a byte array and hash it
             byte[] inputBytes = input.getBytes();
             byte[] hashBytes = md.digest(inputBytes);
-
-            // Convert the hash bytes to a hexadecimal string representation
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hashBytes.length; i++) {
-                String hex = Integer.toHexString(0xff & hashBytes[i]);
+            for (byte hashByte : hashBytes) {
+                String hex = Integer.toHexString(0xff & hashByte);
                 if (hex.length() == 1) {
                     sb.append('0');
                 }
@@ -184,7 +178,6 @@ public class Crawler implements Runnable{
         System.out.println("DisallowedURLs "+DisallowedURLs.size());
     }
 
-
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.bbc.com/");
         Thread[] threads = new Thread[8];
@@ -194,12 +187,14 @@ public class Crawler implements Runnable{
             threads[i].setName(String.valueOf(i));
             threads[i].start();
         }
-        for(int i=0;i<8;i++)
+        for(int i=0;i<8;i++) {
+         System.out.println(i);
             threads[i].join();
-
+        }
+        System.out.println("Crawling finished1");
         InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());
+        System.out.println("Crawling finished2");
         builder.Build();
-//        crawler.invertedFileBuilder.Index();
         PageRanker pageRanker = new PageRanker(crawler.outLinks);
         pageRanker.CalculatePageRanks();
         pageRanker.IndexPageRankScores();

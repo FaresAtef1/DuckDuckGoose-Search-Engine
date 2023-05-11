@@ -17,7 +17,8 @@ public class PhraseSearching {
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         String[] targetPhrase = input.substring(1, input.length() - 1).split("\\s+");
-        List<String> words = Indexer.Query_Processing(input);
+        Indexer indexer=new Indexer();
+        List<String> words = indexer.Query_Processing(input);
         if(words.isEmpty())
             return;
         List<Document> queries = new ArrayList<>();
