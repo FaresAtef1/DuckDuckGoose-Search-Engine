@@ -110,8 +110,11 @@ public class InvertedFileBuilder {
 
     public void Build()
     {
+        System.out.println("Building 1");
        this.Invert();
+        System.out.println("Building 2");
        this.Index();
+        System.out.println("Building 3");
     }
 
     private List<pair<Integer, String>> convertTokensToIds(List<pair<pair<String,Integer>, String>> tokens,String URL) {

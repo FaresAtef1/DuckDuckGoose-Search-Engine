@@ -6,13 +6,17 @@ import java.io.IOException;
 import java.util.*;
 
 public class WebpageParagraphScraper {
-    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles,Map<String,List<Integer>>URLTagsIndices) throws IOException {
+    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles,Map<String,List<Integer>>URLTagsIndices,int pagenum) throws IOException {
         List<String> paragraphs = new ArrayList<>();
         Mongo mon=new Mongo();
-        for(String URL:URLs)
+        int start=(pagenum-1)*10;
+        int end=start+10;
+        if(end>URLs.size())
+            end=URLs.size();
+        for(int j=start;j<end;j++)
         {
             HashMap<Integer,Integer>MF=new HashMap<>();
-            List<Integer>Indices=URLTagsIndices.get(URL);
+            List<Integer>Indices=URLTagsIndices.get(URLs.get(j));
             for(Integer i:Indices)
             {
                 if(MF.containsKey(i))
@@ -30,10 +34,13 @@ public class WebpageParagraphScraper {
                     maxindex=entry.getKey();
                 }
             }
-            List<Document> doc1=mon.ExecuteQuery(new Document("URL",URL).append("TagIndex",maxindex),"Snippets");
-            List<Document> doc2=mon.ExecuteQuery(new Document("URL",URL),"Titles");
-            if(doc1.size()>1||doc2.size()>0)
+            List<Document> doc1=mon.ExecuteQuery(new Document("URL",URLs.get(j)).append("TagIndex",maxindex),"Snippets");
+            List<Document> doc2=mon.ExecuteQuery(new Document("URL",URLs.get(j)),"Titles");
+            if(doc1.size()>1) {
                 System.out.println("Error");
+                System.out.println(doc1);
+            }
+//
 //            String Title=doc2.get(0).getString("Title");
 //            if(Title==)
             paragraphs.add(doc1.get(0).getString("Text"));

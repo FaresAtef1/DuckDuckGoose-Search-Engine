@@ -82,6 +82,8 @@ public class Ranker {
         for(Document pageRankScore : pageRankScores)
         {
             String DocURL=pageRankScore.getString("DocURL");
+            if(!result.containsKey(DocURL))
+                continue;
             double pageRank=pageRankScore.getDouble("PageRankScore");
             result.replace(DocURL,result.get(DocURL)+W2*pageRank);
         }

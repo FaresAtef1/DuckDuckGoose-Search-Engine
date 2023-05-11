@@ -3,6 +3,7 @@
   <component name="WebContextManager">
     <option name="state">
       <map>
+        <entry key="file://$PROJECT_DIR$/App/SearchEngineApp/src/main/webapp/ResultsPage.jsp" value="file://$PROJECT_DIR$/App/SearchEngineApp/src/main/webapp" />
         <entry key="file://$PROJECT_DIR$/App/SearchEngineApp/src/main/webapp/index.jsp" value="file://$PROJECT_DIR$/App/SearchEngineApp/src/main/webapp" />
       </map>
     </option>

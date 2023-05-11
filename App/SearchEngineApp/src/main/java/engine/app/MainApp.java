@@ -19,6 +19,12 @@ public class MainApp extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
         String query = request.getParameter("query");
+        String pagenum= request.getParameter("page");
+        if(pagenum==null)
+            pagenum="1";
+        int Pagenum=Integer.parseInt(pagenum);
+        System.out.println(pagenum);
+        System.out.println(query);
         int StartTime=(int)System.currentTimeMillis();
         Query_Processor queryProcessor = new Query_Processor();
         Map<String, List<Integer>> URLTagIndices=new HashMap<>();
@@ -28,9 +34,7 @@ public class MainApp extends HttpServlet {
         if(URLs==null)
             URLs= new ArrayList<String>() ;
         else
-        {
-            paragraphs=WebpageParagraphScraper.Scraper(URLs,query,titles,URLTagIndices);
-        }
+            paragraphs=WebpageParagraphScraper.Scraper(URLs,query,titles,URLTagIndices,Pagenum);
         if(paragraphs==null)
             paragraphs= new ArrayList<String>() ;
 //        System.out.println("Num of results : "+URLs.size());
@@ -45,6 +49,7 @@ public class MainApp extends HttpServlet {
         session.setAttribute("titles",titles);
         session.setAttribute("paragraphs",paragraphs);
         session.setAttribute("runtime",Time);
+        session.setAttribute("query",query);
 //        RequestDispatcher  dispatcher = request.getRequestDispatcher("ResultsPage.jsp?page=1");
 //        try {
 //            dispatcher.forward(request, response);
@@ -53,7 +58,7 @@ public class MainApp extends HttpServlet {
 //        {
 //           e.printStackTrace();
 //        }
-        response.sendRedirect("ResultsPage.jsp?page=1");
+        response.sendRedirect("ResultsPage.jsp?page="+pagenum);
 
     }
     public void destroy() {
