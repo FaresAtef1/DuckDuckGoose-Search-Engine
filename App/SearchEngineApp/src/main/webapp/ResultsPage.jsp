@@ -63,7 +63,9 @@
     </div>
 </div>
 <div class="pagination">
-    <% for (int i = 1; i <= totalPages; i++) { %>
+    <% int pageStart = Math.max(currentPage - 5, 1);
+        int pageEnd = Math.min(pageStart + 10, totalPages);
+        for (int i = pageStart; i < pageEnd; i++) { %>
     <a href="app-servlet?page=<%=i%>&query=<%=query%>"><%=i%></a>
     <% } %>
 </div>

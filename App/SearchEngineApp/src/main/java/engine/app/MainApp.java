@@ -1,6 +1,8 @@
 package engine.app;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import database.Mongo;
@@ -20,6 +22,7 @@ public class MainApp extends HttpServlet {
         System.out.println("init");
         recognizer=new VoiceRecognizer();
         Mongo dbMan = new Mongo();
+
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
