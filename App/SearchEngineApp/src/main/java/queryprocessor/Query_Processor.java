@@ -5,13 +5,17 @@ import database.Mongo;
 import indexer.Indexer;
 import org.bson.Document;
 import ranker.Ranker;
+import voice.VoiceRecognizer;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 public class Query_Processor {
+
     public List<String> RetrieveResults(String userQuery,Map<String,List<Integer>>URLTagIndices) {
         Indexer indexer=new Indexer();
+
+
         List<String> Original_Text = indexer.Query_Processing(userQuery);
         List<String> words = new ArrayList<>();
         for (String s : Original_Text) words.add(indexer.Stem(s));

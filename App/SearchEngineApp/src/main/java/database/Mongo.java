@@ -27,7 +27,7 @@ public class Mongo {
             return;
         isConnectionEstablished = true;
         mongoClient = new MongoClient("localhost", 27017);
-        database = mongoClient.getDatabase("test");
+        database = mongoClient.getDatabase("SearchEngineDataBase");
     }
 
     public void  closeConnection()
@@ -199,7 +199,7 @@ public class Mongo {
     {
         try {
             mongoClient = new MongoClient("localhost", 27017);
-            database = mongoClient.getDatabase("SearchEngine");
+            database = mongoClient.getDatabase("SearchEngineDataBase");
             isConnectionEstablished = true;
         }
         catch (Exception e)
