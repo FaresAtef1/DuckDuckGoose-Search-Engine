@@ -13,6 +13,7 @@ public class VoiceRecognizer {
     public VoiceRecognizer()
     {
         Configuration configuration = new Configuration();
+        //adjust the paths to the dictionary and the language model
         Path DicPath= Paths.get(System.getProperty("user.dir")).toAbsolutePath();
         DicPath=DicPath.getParent().getParent().getParent();
         String dicPath=DicPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic";
