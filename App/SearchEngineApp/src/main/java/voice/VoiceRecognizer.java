@@ -13,13 +13,10 @@ public class VoiceRecognizer {
     public VoiceRecognizer()
     {
         Configuration configuration = new Configuration();
-        //adjust the paths to the dictionary and the language model
-        Path DicPath= Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-        DicPath=DicPath.getParent().getParent().getParent();
-        String dicPath=DicPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic";
-        Path LmPath= Paths.get(System.getProperty("user.dir"));
-        LmPath=LmPath.getParent().getParent().getParent();
-        String lmPath= LmPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm";
+        Path projPath= Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+        projPath=projPath.getParent().getParent().getParent();
+        String dicPath=projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic";
+        String lmPath= projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm";
         configuration.setAcousticModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us");
         configuration.setDictionaryPath("file:///"+dicPath);
         configuration.setLanguageModelPath("file:///"+lmPath);
