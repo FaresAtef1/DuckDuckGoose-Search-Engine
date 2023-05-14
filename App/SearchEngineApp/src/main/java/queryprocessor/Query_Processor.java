@@ -10,9 +10,11 @@ import voice.VoiceRecognizer;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Query_Processor {
 
-    public List<String> RetrieveResults(String userQuery,Map<String,List<Integer>>URLTagIndices) {
+    public List<String> RetrieveResults(String userQuery, ConcurrentHashMap<String,Set<Integer>> URLTagIndices) {
         Indexer indexer=new Indexer();
 
 

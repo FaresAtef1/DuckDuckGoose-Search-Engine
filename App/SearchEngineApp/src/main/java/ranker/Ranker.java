@@ -6,6 +6,7 @@ import org.bson.Document;
 import java.net.URI;
 import java.security.PrivateKey;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,7 +20,7 @@ public class Ranker {
 
     private static final double[] headingWeights = {2, 1.5, 1.25, 1.125, 1.0625, 1.03125};
 
-    public static List<String> Rank(List<Document> documents, List<String> originalQuery,Map<String,List<Integer>> URLTagsIndices) {
+    public static List<String> Rank(List<Document> documents, List<String> originalQuery, ConcurrentHashMap<String,Set<Integer>> URLTagsIndices) {
         Map<String , Double> result=new HashMap<>();
         Mongo dbManager = new Mongo();
         List<Document> pageRankScores=new ArrayList<>();
@@ -64,10 +65,10 @@ public class Ranker {
                     List<Document> tagslist = posting.getList("TagsList", Document.class);
                     for (Document tag : tagslist) {
                         int tagindex = (int) tag.get("TagIndex");
-                        List<Integer> indices = URLTagsIndices.get(DocURL);
+                        Set<Integer> indices = URLTagsIndices.get(DocURL);
                         if(indices==null)
                         {
-                            indices=new ArrayList<>();
+                            indices=new HashSet<>();
                             indices.add(tagindex);
                             URLTagsIndices.put(DocURL,indices);
                         }

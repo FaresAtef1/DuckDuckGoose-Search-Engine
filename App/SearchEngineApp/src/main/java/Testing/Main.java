@@ -13,7 +13,16 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-       Document doc=Jsoup.connect("https://www.bbc.co.uk/search?d=HOMEPAGE_PS").get();
-       System.out.println(doc.title());
+        String query="\"hello world \"hello world\"";
+        System.out.println(query);
+        int count = 0;
+        for(int i=0;i<query.length();i++)
+        {
+            if(query.charAt(i)=='"')
+                count++;
+        }
+        System.out.println(count);
+
+
     }
 }

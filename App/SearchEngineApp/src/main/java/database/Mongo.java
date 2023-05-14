@@ -27,7 +27,7 @@ public class Mongo {
             return;
         isConnectionEstablished = true;
         mongoClient = new MongoClient("localhost", 27017);
-        database = mongoClient.getDatabase("SearchEngineDataBase");
+        database = mongoClient.getDatabase("test");
     }
 
     public void  closeConnection()
@@ -154,6 +154,13 @@ public class Mongo {
         collection.find(query).into(results);
         return results;
     }
+    public List<String> ExecuteQueryAndGetDistinct(Document query, String collectionName, String distinctField)
+    {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        List<String> results = new ArrayList<>();
+        collection.distinct(distinctField,query,String.class).into(results);
+        return results;
+    }
 
     public void mongotest()
     {
@@ -199,7 +206,7 @@ public class Mongo {
     {
         try {
             mongoClient = new MongoClient("localhost", 27017);
-            database = mongoClient.getDatabase("SearchEngineDataBase");
+            database = mongoClient.getDatabase("test");
             isConnectionEstablished = true;
         }
         catch (Exception e)
@@ -211,14 +218,8 @@ public class Mongo {
     public static void main(String[] args)
     {
         Mongo mon=new Mongo();
-//        database.createCollection("Indexer");
-//        mon.mongotest();
-//        database
-//        MongoCollection<org.bson.Document> collection=database.getCollection("Indexer");
-//        collection.drop();
-//        mon.CreateCollections();
         mon.DropCollections();
-
         mon.CreateCollections();
+
     }
 }
