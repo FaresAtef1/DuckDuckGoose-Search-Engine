@@ -4,34 +4,47 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import database.Mongo;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
+import phrase_searching.PhraseSearching;
 import queryprocessor.Query_Processor;
 import queryprocessor.WebpageParagraphScraper;
 import voice.*;
 
+import javax.swing.*;
+
 @WebServlet(name = "appServlet", value = "/app-servlet", loadOnStartup = 1)
 
 public class MainApp extends HttpServlet {
-
     private  VoiceRecognizer recognizer;
     private List<String> URLs;
-    private boolean oldQuery=false;
+    private ConcurrentHashMap<String, Set<Integer>> URLTagIndices;
+    private boolean flag; // to prevent calculating the URLs more than once
+//    String prev_query;
 
     public void init() {
-        System.out.println("init");
-        recognizer=new VoiceRecognizer();
-        URLs=null;
-        Mongo dbMan = new Mongo();
-
+        recognizer = new VoiceRecognizer();
+        URLs=new ArrayList<>();
+        URLTagIndices=new ConcurrentHashMap<>();
+        flag=false;
+//        prev_query=null;
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
         //get the query from the user
         String query = request.getParameter("query");
+//        if()
+        System.out.println(query);
+        int count = 0;
+        for(int i=0;i<query.length();i++)
+        {
+            if(query.charAt(i)=='"')
+                count++;
+        }
         //check the current page number , 1 by default
         String pagenum= request.getParameter("page");
         //check the button type
@@ -48,18 +61,25 @@ public class MainApp extends HttpServlet {
         }
         if(pagenum==null) {
             pagenum = "1";
+            flag=false;
         }
         int StartTime=(int)System.currentTimeMillis();
         //Create a new query processor object
         Query_Processor queryProcessor = new Query_Processor();
-        Map<String, List<Integer>> URLTagIndices=new HashMap<>();
-        URLs  = queryProcessor.RetrieveResults(query, URLTagIndices);
+//        ConcurrentHashMap<String, Set<Integer>> URLTagIndices=new ConcurrentHashMap<>();
+        if(true)
+        {
+            if(count%2==0&&count!=0)
+                URLs= PhraseSearching.phraseSearch(query,URLTagIndices);
+            else
+                URLs= queryProcessor.RetrieveResults(query,URLTagIndices);
+            flag=true;
+        }
         List<String> titles = new ArrayList<>();
         List<String> paragraphs = new ArrayList<>();
         //check if no results are found
-        if(URLs==null) {
-            URLs = new ArrayList<String>();
-        }
+        if(URLs==null)
+            URLs= new ArrayList<String>() ;
         if(button_type!=null)
         {
             //check if the user clicked on the i am feeling lucky button
@@ -85,7 +105,15 @@ public class MainApp extends HttpServlet {
             }
         }
         //Scrape the paragraphs from the webpages
-        paragraphs=WebpageParagraphScraper.Scraper(URLs,query,titles,URLTagIndices,Integer.parseInt(pagenum));
+        if(count%2==0&&count!=0)
+        {
+            List<String> temp = new ArrayList<>();
+            paragraphs = WebpageParagraphScraper.ScraperPhraseSearch(URLs, query, titles, URLTagIndices, Integer.parseInt(pagenum),temp);
+            URLs=temp;
+            System.out.println("app "+temp.size());
+        }
+        else
+            paragraphs = WebpageParagraphScraper.Scraper(URLs, query, titles, URLTagIndices, Integer.parseInt(pagenum));
         //Calculate the time taken to process the query
         int EndTime=(int)System.currentTimeMillis();
         float Time= (float) ((EndTime-StartTime)/1000.0);

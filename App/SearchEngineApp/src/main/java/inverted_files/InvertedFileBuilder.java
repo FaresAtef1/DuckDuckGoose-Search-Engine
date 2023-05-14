@@ -15,7 +15,7 @@ import structures.pair;
 public class InvertedFileBuilder implements Runnable{
     //    private Map<String, Integer> lexicon = new HashMap<>();
     private static ConcurrentHashMap<String, List<pair<String, pair<Double, String>>>> postings = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<pair<String,String>,List<Integer>> TagIndices = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<pair<String,String>,Set<Integer>> TagIndices = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String , Set<String>>  stem= new ConcurrentHashMap<>();
     private static Map<String,Integer> postingRanks = new HashMap<>();
     private static ReentrantLock stemLock = new ReentrantLock();
@@ -120,7 +120,7 @@ public class InvertedFileBuilder implements Runnable{
                 for(pair<String, pair<Double, String>> p : postingsList)//for each posting
                 {
                     org.bson.Document temp = new org.bson.Document("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second); // the posting of each actual word
-                    List<Integer> tags = TagIndices.get(new pair<>(p.first,word));
+                    Set<Integer> tags = TagIndices.get(new pair<>(p.first,word));
                     List <org.bson.Document> tagsList = new ArrayList<>();
                     if(tags!=null)
                     {
@@ -251,12 +251,12 @@ public class InvertedFileBuilder implements Runnable{
             stemLock.unlock();
             // critical area end
 
-            List<Integer> indices = TagIndices.get(new pair<>(URL,token.first.first));
+            Set<Integer> indices = TagIndices.get(new pair<>(URL,token.first.first));
             if(indices!=null)
                 indices.add(token.first.second);
             else
             {
-                indices = new ArrayList<>();
+                indices = new HashSet<>();
                 indices.add(token.first.second);
                 TagIndices.put(new pair<>(URL,token.first.first), indices);
             }

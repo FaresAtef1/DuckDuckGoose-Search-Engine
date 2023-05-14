@@ -14,12 +14,13 @@ public class VoiceRecognizer {
     {
         Configuration configuration = new Configuration();
         Path projPath= Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-        projPath=projPath.getParent().getParent().getParent();
+        System.out.println(projPath);
+        projPath=projPath.getParent();
         String dicPath=projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic";
         String lmPath= projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm";
         configuration.setAcousticModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us");
-        configuration.setDictionaryPath("file:///"+dicPath);
-        configuration.setLanguageModelPath("file:///"+lmPath);
+        configuration.setDictionaryPath("file:///"+"D:\\Search_Engine_F\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic");
+        configuration.setLanguageModelPath("file:///"+"D:\\Search_Engine_F\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm");
         try {
             recognizer = new LiveSpeechRecognizer(configuration);
         } catch (IOException e) {
@@ -30,6 +31,7 @@ public class VoiceRecognizer {
     public static void main(String[] args) throws Exception {
 
         VoiceRecognizer voiceTest = new VoiceRecognizer();
+        voiceTest.Recognize();
     }
     public String Recognize() {
             String query = null;
