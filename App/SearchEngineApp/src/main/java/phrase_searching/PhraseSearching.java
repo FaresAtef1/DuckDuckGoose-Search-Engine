@@ -10,19 +10,20 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 public class PhraseSearching implements Runnable {
-    private static ConcurrentLinkedQueue<Document> results ;   /// List of documents returned from the database
-    static  ConcurrentHashMap<String,Map<Integer,Integer>> out ; ///< URL ,< tagIndex , count > >
+    private ConcurrentLinkedQueue<Document> results ;   /// List of documents returned from the database
+    private ConcurrentHashMap<String,Map<Integer,Integer>> out ; ///< URL ,< tagIndex , count > >
     private ConcurrentHashMap<String,Set<Integer>> resultsList;// <URL,Set <TagIndex>>
     private List<String> words; /// List of words in the query
 
     private static ReentrantLock lock = new ReentrantLock();
     private static final int numberOfThreads=4;
-    public PhraseSearching(ConcurrentLinkedQueue<Document> results, List<String> words)
+    public PhraseSearching(ConcurrentLinkedQueue<Document> results, List<String> words,ConcurrentHashMap<String,Set<Integer>> ResultsList)
     {
         this.results=results;
         this.out=new ConcurrentHashMap<>();
-        this.resultsList=new ConcurrentHashMap<>();
+        this.resultsList=ResultsList;
         this.words=words;
+//        this.resultsList
     }
     public void  run()
     {
@@ -42,7 +43,7 @@ public class PhraseSearching implements Runnable {
                                 for (Document doc2 : indices) {
                                     lock.lock();
                                     int index = (int) doc2.get("TagIndex");
-                                    Map map = out.get(url); /// counting the ferquency of the tagIndex
+                                    Map<Integer, Integer> map = out.get(url); /// counting the ferquency of the tagIndex
                                     if (map == null) {
                                         map = new HashMap<>();
                                         map.put(index, 1);
@@ -79,7 +80,7 @@ public class PhraseSearching implements Runnable {
             }
     }
 
-    public static List<String> phraseSearch(String input,ConcurrentHashMap<String,Set<Integer>> resultsList)
+    public static List<String> phraseSearch(String input,ConcurrentHashMap<String,Set<Integer>> ResultsList)
     {
         Indexer indexer=new Indexer();
         List<String> words = indexer.Query_Processing(input);
@@ -93,11 +94,9 @@ public class PhraseSearching implements Runnable {
         Mongo mongo = new Mongo();
         List<Document> documents = mongo.ExecuteQuery(query, "Indexer");
 
-        ConcurrentLinkedQueue<Document> results = new ConcurrentLinkedQueue<>();
-        for(Document doc : documents)
-            results.add(doc);
+        ConcurrentLinkedQueue<Document> results = new ConcurrentLinkedQueue<>(documents);
         Thread [] threads = new Thread[numberOfThreads];
-        PhraseSearching phraseSearching = new PhraseSearching(results,words);
+        PhraseSearching phraseSearching = new PhraseSearching(results,words,ResultsList);
         for(int i=0;i<numberOfThreads;i++)
         {
             threads[i]=new Thread(phraseSearching);
@@ -106,15 +105,20 @@ public class PhraseSearching implements Runnable {
         for (int i = 0; i < numberOfThreads; i++) {
             try {
                 threads[i].join();
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException ignored) {}
         }
         /////////////////// ranking ///////////////////////////
-        resultsList=phraseSearching.resultsList;
+//        ResultsList=phraseSearching.resultsList;
+        System.out.println(ResultsList);
         List<Document> pagerankQuery = new ArrayList<>();
-        for(String url : resultsList.keySet())
+        if(ResultsList==null)
+            System.out.println("nullll2");
+        for(String url : ResultsList.keySet())
         {
             pagerankQuery.add(new Document("DocURL",url));
         }
+        if(pagerankQuery.isEmpty())
+            return null;
         List<Document>pageRankScore=mongo.ExecuteQuery(new Document("$or",pagerankQuery),"PageRankScores");
         Map<String, Double> pageRankMap = new HashMap<>();
         for(Document doc : pageRankScore)
@@ -122,48 +126,47 @@ public class PhraseSearching implements Runnable {
             String url=(String)doc.get("DocURL");
             Double score=(Double) doc.get("PageRankScore");
             pageRankMap.put(url,score);
-
         }
         List<String> urls=pageRankMap.entrySet()
                 .stream()
                 .sorted(Map.Entry.<String,Double>comparingByValue().reversed())
                 .map(Map.Entry::getKey)
-                .toList();;
+                .toList();
+//        if(ResultsList==null)
+//            System.out.println(results);
         return urls;
     }
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
-        String[] targetPhrase = input.substring(1, input.length() - 1).split("\\s+");
-        Indexer indexer=new Indexer();
-        List<String> words = indexer.Query_Processing(input);
-        if(words.isEmpty())
-            return;
-        System.out.println(words);
-//        for(int i=0;i<words.size();i++)
-//            words.set(i,indexer.Stem(words.get(i)));
-        List<Document> queries = new ArrayList<>();
-        for (String word : words)
-            queries.add(new Document("stemmedWord", indexer.Stem(word)));
-        Document query = new Document("$or", queries); // Combine queries with logical OR
-        Mongo mongo = new Mongo();
-        List<Document> documents = mongo.ExecuteQuery(query, "Indexer");
-
-        ConcurrentLinkedQueue<Document> results = new ConcurrentLinkedQueue<>();
-        for(Document doc : documents)
-            results.add(doc);
-        Thread [] threads = new Thread[numberOfThreads];
-        PhraseSearching phraseSearching = new PhraseSearching(results,words);
-        for(int i=0;i<numberOfThreads;i++)
-        {
-            threads[i]=new Thread(phraseSearching);
-            threads[i].start();
-        }
-        for (int i = 0; i < numberOfThreads; i++) {
-            try {
-                threads[i].join();
-            } catch (InterruptedException e) {}
-        }
+//        Scanner scanner = new Scanner(System.in);
+//        String input = scanner.nextLine();
+//        String[] targetPhrase = input.substring(1, input.length() - 1).split("\\s+");
+//        Indexer indexer=new Indexer();
+//        List<String> words = indexer.Query_Processing(input);
+//        if(words.isEmpty())
+//            return;
+//        System.out.println(words);
+////        for(int i=0;i<words.size();i++)
+////            words.set(i,indexer.Stem(words.get(i)));
+//        List<Document> queries = new ArrayList<>();
+//        for (String word : words)
+//            queries.add(new Document("stemmedWord", indexer.Stem(word)));
+//        Document query = new Document("$or", queries); // Combine queries with logical OR
+//        Mongo mongo = new Mongo();
+//        List<Document> documents = mongo.ExecuteQuery(query, "Indexer");
+//
+//        ConcurrentLinkedQueue<Document> results = new ConcurrentLinkedQueue<>(documents);
+//        Thread [] threads = new Thread[numberOfThreads];
+////        PhraseSearching phraseSearching = new PhraseSearching(results,words,);
+//        for(int i=0;i<numberOfThreads;i++)
+//        {
+//            threads[i]=new Thread(phraseSearching);
+//            threads[i].start();
+//        }
+//        for (int i = 0; i < numberOfThreads; i++) {
+//            try {
+//                threads[i].join();
+//            } catch (InterruptedException ignored) {}
+//        }
 
 
 
@@ -213,31 +216,31 @@ public class PhraseSearching implements Runnable {
 //           }
 //
 //        }
-        Set<pair<String,String>> resultsList = new HashSet<>();
-        for(Map.Entry<String,Map<Integer,Integer>> entry : out.entrySet())
-        {
-            String url = entry.getKey();
-            Map<Integer,Integer> map = entry.getValue();
-            for(Map.Entry<Integer,Integer> index: map.entrySet())
-            {
-                Integer frequency = index.getValue();
-                if(frequency == words.size())
-                {
-                    List<Document> docs=mongo.ExecuteQuery(new Document("URL",url).append("TagIndex", index.getKey()),"Snippets");
-                    resultsList.add(new pair<>(url,docs.get(0).getString("Text")));
+//        Set<pair<String,String>> resultsList = new HashSet<>();
+//        for(Map.Entry<String,Map<Integer,Integer>> entry : out.entrySet())
+//        {
+//            String url = entry.getKey();
+//            Map<Integer,Integer> map = entry.getValue();
+//            for(Map.Entry<Integer,Integer> index: map.entrySet())
+//            {
+//                Integer frequency = index.getValue();
+//                if(frequency == words.size())
+//                {
+//                    List<Document> docs=mongo.ExecuteQuery(new Document("URL",url).append("TagIndex", index.getKey()),"Snippets");
+//                    resultsList.add(new pair<>(url,docs.get(0).getString("Text")));
+//
+//
+//                }
+//            }
+//
+//        }
 
+//        for(pair<String,String> result : resultsList)
+//        {
+//            System.out.println(result.first);
+//            System.out.println(result.second);
+//        }
 
-                }
-            }
-
-        }
-
-        for(pair<String,String> result : resultsList)
-        {
-            System.out.println(result.first);
-            System.out.println(result.second);
-        }
-
-        scanner.close();
+//        scanner.close();
     }
 }

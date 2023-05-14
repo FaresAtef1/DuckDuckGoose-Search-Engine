@@ -32,7 +32,7 @@ public class Crawler implements Runnable{
     private final List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
 
     private static Mongo dbMan ;
-    final int MAX_VALUE = 1000;
+    final int MAX_VALUE = 6000;
 
     private static final int StateSize = 25;
 
@@ -108,7 +108,7 @@ public class Crawler implements Runnable{
 //                        dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
 //                        isPaused.set(false);
 //                    }
-                } catch (IOException | InterruptedException ignored) {return;}
+                } catch (IOException | InterruptedException ignored) {}
             }
         }
     }
@@ -180,15 +180,14 @@ public class Crawler implements Runnable{
 
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler("https://www.bbc.com/");
-        Thread[] threads = new Thread[8];
-        for (int i = 0; i <8; i++)
+        Thread[] threads = new Thread[12];
+        for (int i = 0; i <12; i++)
         {
             threads[i] = new Thread(crawler);
             threads[i].setName(String.valueOf(i));
             threads[i].start();
         }
-        for(int i=0;i<8;i++) {
-         System.out.println(i);
+        for(int i=0;i<12;i++) {
             threads[i].join();
         }
         System.out.println("Crawling finished1");
