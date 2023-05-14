@@ -17,10 +17,13 @@ import voice.*;
 public class MainApp extends HttpServlet {
 
     private  VoiceRecognizer recognizer;
+    private List<String> URLs;
+    private boolean oldQuery=false;
 
     public void init() {
         System.out.println("init");
         recognizer=new VoiceRecognizer();
+        URLs=null;
         Mongo dbMan = new Mongo();
 
     }
@@ -50,12 +53,13 @@ public class MainApp extends HttpServlet {
         //Create a new query processor object
         Query_Processor queryProcessor = new Query_Processor();
         Map<String, List<Integer>> URLTagIndices=new HashMap<>();
-        List<String> URLs = queryProcessor.RetrieveResults(query,URLTagIndices);
+        URLs  = queryProcessor.RetrieveResults(query, URLTagIndices);
         List<String> titles = new ArrayList<>();
         List<String> paragraphs = new ArrayList<>();
         //check if no results are found
-        if(URLs==null)
-            URLs= new ArrayList<String>() ;
+        if(URLs==null) {
+            URLs = new ArrayList<String>();
+        }
         if(button_type!=null)
         {
             //check if the user clicked on the i am feeling lucky button

@@ -18,6 +18,8 @@ public class PageRanker {
     private static final double dampingFactor = 0.85;
     private static final double threshold = 0.0001;
 
+
+
     public PageRanker(ConcurrentHashMap<String, Set<String>> outwardLinks) {
         this.outLinks = outwardLinks;
         this.inLinks= this.getInLinks();

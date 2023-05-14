@@ -6,17 +6,17 @@ import java.io.IOException;
 import java.util.*;
 
 public class WebpageParagraphScraper {
-    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles,Map<String,List<Integer>>URLTagsIndices,int pagenum) throws IOException {
-        List<String> paragraphs = new ArrayList<>();
-        Mongo mon=new Mongo();
-        int start=(pagenum-1)*10;
-        int end=start+10;
-        if(end>URLs.size())
-            end=URLs.size();
+
+    private static  int NUM_OF_THREADS = 5;
+
+
+    private  static void Scrape(int start,int end,List<String>URLs,Map<String,List<Integer>>URLTagsIndices,Mongo mon,List<String> paragraphs,List<String>titles)
+    {
         for(int j=start;j<end;j++)
         {
+            String URL=URLs.get(j);
             HashMap<Integer,Integer>MF=new HashMap<>();
-            List<Integer>Indices=URLTagsIndices.get(URLs.get(j));
+            List<Integer>Indices=URLTagsIndices.get(URL);
             for(Integer i:Indices)
             {
                 if(MF.containsKey(i))
@@ -34,17 +34,47 @@ public class WebpageParagraphScraper {
                     maxindex=entry.getKey();
                 }
             }
-            List<Document> doc1=mon.ExecuteQuery(new Document("URL",URLs.get(j)).append("TagIndex",maxindex),"Snippets");
-            List<Document> doc2=mon.ExecuteQuery(new Document("URL",URLs.get(j)),"Titles");
+            List<Document> doc1=mon.ExecuteQuery(new Document("URL",URL).append("TagIndex",maxindex),"Snippets");
+            List<Document> doc2=mon.ExecuteQuery(new Document("URL",URL),"Titles");
             if(doc1.size()>1) {
                 System.out.println("Error");
                 System.out.println(doc1);
             }
-//
-//            String Title=doc2.get(0).getString("Title");
-//            if(Title==)
             paragraphs.add(doc1.get(0).getString("Text"));
             titles.add(doc2.get(0).getString("Title"));
+        }
+        System.out.println("Thread "+Thread.currentThread().getName()+" Paragraps size "+paragraphs.size()+" Titles size "+titles.size());
+    }
+    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles,Map<String,List<Integer>>URLTagsIndices,int pagenum) throws IOException {
+        List<String> paragraphs = new ArrayList<>();
+        Mongo mon=new Mongo();
+        int start=(pagenum-1)*10;
+        int end=start+10;
+        if(end>URLs.size())
+            end=URLs.size();
+        Thread [] threads=new Thread[5];
+        if(end-start<NUM_OF_THREADS)
+            NUM_OF_THREADS=end-start;
+        for(int i=0;i<NUM_OF_THREADS;i++)
+        {
+            int s=start+(end-start)*i/NUM_OF_THREADS;
+            int e;
+            if(i==NUM_OF_THREADS-1)
+                e=end;
+            else {
+                e = start + (end - start) * (i + 1) / NUM_OF_THREADS;
+            }
+            System.out.println("Thread "+i+" start "+s+" end "+e);
+            threads[i]=new Thread(()->Scrape(s,e,URLs,URLTagsIndices,mon,paragraphs,titles));
+            threads[i].start();
+        }
+        for(int i=0;i<NUM_OF_THREADS;i++)
+        {
+            try {
+                threads[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         for(int j=0;j< paragraphs.size();j++)
         {

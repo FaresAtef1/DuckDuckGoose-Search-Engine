@@ -4,6 +4,7 @@ import database.Mongo;
 import org.bson.Document;
 
 import java.net.URI;
+import java.net.URL;
 import java.security.PrivateKey;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -12,13 +13,22 @@ import java.util.regex.Pattern;
 public class Ranker {
     private static final double W1= 0.8; //TF_IDF weight
     private static final double W2= 0.2; // PageRank weight
-    private static final double W3= 10;// Exact match weight
-    private static final double W4= 10;// Query word is in the url
-    private static final double W5= 4;// Query word is in the title
+    private static final double W3= 5;// Exact match weight
+    private static final double W4= 20;// Query word is in the url
+    private static final double W5= 10;// Query word is in the title
     private static final double W6= 1;// Query word is in the body
+
+    private static final double W7= 2000; //The entire query is in the URL and Nothing else
 
     private static final double[] headingWeights = {2, 1.5, 1.25, 1.125, 1.0625, 1.03125};
 
+    static void  Print(String doc,double weight)
+    {
+        if(doc.equals("https://www.bbc.com/reel") || doc.equals("https://www.bbc.com/"))
+        {
+            System.out.println("DocURL : "+doc + " weight: "+weight);
+        }
+    }
     public static List<String> Rank(List<Document> documents, List<String> originalQuery,Map<String,List<Integer>> URLTagsIndices) {
         Map<String , Double> result=new HashMap<>();
         Mongo dbManager = new Mongo();
@@ -36,24 +46,54 @@ public class Ranker {
                 {
                     String DocURL = posting.getString("DocURL");
                     double TF = posting.getDouble("tf");
+
                     double TF_IDF = (originalQuery.contains(actualWord) ? W3 : W1) * TF * IDF;
                     String Position = posting.getString("position");
+                    if(DocURL.equals("https://www.bbc.com/reel") || DocURL.equals("https://www.bbc.com/"))
+                    {
+                        System.out.println("DocURL : "+DocURL + " TF before: "+TF+ " Position: "+Position);
+                    }
                     Pattern pattern = Pattern.compile("^https?://([^/]+)");
                     Matcher matcher = pattern.matcher(DocURL);
-                    if(matcher.find()) {
-                        String host = matcher.group(1);
-                        if (host.toLowerCase().contains(actualWord))
-                            TF_IDF *= W4;
+                    try {
+                        URL url = new URL(DocURL);
+                        String path = url.getPath();
+                        String host = url.getHost();
+                        String[] parts = host.split("\\.");
+                        String domain = parts[parts.length - 2];
+                            if (host.toLowerCase().contains(actualWord)) {
+                                if((path.equals("/")||path.isEmpty())&&domain.toLowerCase().equals(actualWord)&&originalQuery.size()==1)
+                                {
+                                    Print(DocURL,W7);
+                                    TF_IDF *= W7;
+                                }
+                                else
+                                {
+                                    Print(DocURL,W4);
+                                    TF_IDF *= W4;
+                                }
+                            }
+                        }
+                    catch (Exception e)
+                    {
+                        continue;
                     }
+
                     switch (Position) {
-                        case "title" -> TF_IDF *= W5;
-                        case "body" -> TF_IDF *= W6;
-                        case "h1" -> TF_IDF *= headingWeights[0];
-                        case "h2" -> TF_IDF *= headingWeights[1];
-                        case "h3" -> TF_IDF *= headingWeights[2];
-                        case "h4" -> TF_IDF *= headingWeights[3];
-                        case "h5" -> TF_IDF *= headingWeights[4];
-                        case "h6" -> TF_IDF *= headingWeights[5];
+                        case "title" -> {TF_IDF *= W5; Print(DocURL,W5);}
+                        case "body" -> {TF_IDF *= W6; Print(DocURL,W6);}
+                        case"h1" -> {TF_IDF *= headingWeights[0]; Print(DocURL,headingWeights[0]);}
+                        case"h2" -> {TF_IDF *= headingWeights[1]; Print(DocURL,headingWeights[1]);}
+                        case"h3" -> {TF_IDF *= headingWeights[2]; Print(DocURL,headingWeights[2]);}
+                        case"h4" -> {TF_IDF *= headingWeights[3]; Print(DocURL,headingWeights[3]);}
+                        case"h5" -> {TF_IDF *= headingWeights[4]; Print(DocURL,headingWeights[4]);}
+                        case"h6" -> {TF_IDF *= headingWeights[5]; Print(DocURL,headingWeights[5]);}
+
+
+                    }
+                    if(DocURL.equals("https://www.bbc.com/reel") || DocURL.equals("https://www.bbc.com/"))
+                    {
+                        System.out.println("DocURL : "+DocURL + " TF_IDF after: "+TF_IDF + " TF: "+TF + " IDF: "+IDF);
                     }
                     Double oldTF_IDF = result.get(DocURL);
                     queries.add(new Document("DocURL",DocURL));
@@ -85,6 +125,10 @@ public class Ranker {
             if(!result.containsKey(DocURL))
                 continue;
             double pageRank=pageRankScore.getDouble("PageRankScore");
+            if(DocURL.equals("https://www.bbc.com/reel") || DocURL.equals("https://www.bbc.com/"))
+            {
+                System.out.println("DocURL: "+DocURL + " TF: "+result.get(DocURL)+" PageRank: "+pageRank);
+            }
             result.replace(DocURL,result.get(DocURL)+W2*pageRank);
         }
         List<String> FinalResult = result.entrySet()
@@ -93,5 +137,10 @@ public class Ranker {
                 .map(Map.Entry::getKey)
                 .toList();
         return FinalResult;
+    }
+    public List<String> PhraseRank(List<String> URLs)
+    {
+
+        return null;
     }
 }

@@ -32,7 +32,7 @@ public class Crawler implements Runnable{
     private final List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
 
     private static Mongo dbMan ;
-    final int MAX_VALUE = 1000;
+    final int MAX_VALUE = 6000;
 
     private static final int StateSize = 25;
 
@@ -55,6 +55,7 @@ public class Crawler implements Runnable{
         while(CrawledNum.get()<MAX_VALUE)
         {
             String head=URLsToCrawl.poll();
+
             if(head!=null)
             {
 //                try {
@@ -62,12 +63,18 @@ public class Crawler implements Runnable{
 //                } catch (InterruptedException e) {
 //                    throw new RuntimeException(e);
 //                }
+
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 outLinks.put(head,new HashSet<>());
                 try
                 {
                     Document doc = Jsoup.connect(head).get();
+                    String lang=doc.select("html").attr("lang");
+                    if(!lang.equals("")&&!lang.contains("en"))
+                    {
+                        continue;
+                    }
                     Elements links = doc.select("a[href]");
                     label1:
                     for(Element link:links)
@@ -81,6 +88,14 @@ public class Crawler implements Runnable{
                             if(LinkURL.endsWith(ext))
                                 continue label1;
                         }
+                        if(LinkURL.endsWith("/")||LinkURL.endsWith("#"))
+                        {
+                            LinkURL=LinkURL.substring(0,LinkURL.length()-1);
+                        }
+                        if(LinkURL.endsWith("/#"))
+                        {
+                            LinkURL=LinkURL.substring(0,LinkURL.length()-2);
+                        }
                         String hash=getContentHashFromURL(LinkURL); // hash of the content of the URL
                         String HashedURL=VisitedURLsContentHash.get(hash);
                         // the URL that has the same hash
@@ -89,7 +104,6 @@ public class Crawler implements Runnable{
 //                            if(outLinks.get(head)==null)
 //                                 outLinks.put(head,new HashSet<>());
                             outLinks.get(head).add(HashedURL);
-
                             continue;
                         }
                         VisitedURLsContentHash.put(hash,LinkURL);
@@ -108,7 +122,8 @@ public class Crawler implements Runnable{
 //                        dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
 //                        isPaused.set(false);
 //                    }
-                } catch (IOException | InterruptedException ignored) {return;}
+                } catch (IOException | InterruptedException ignored) {
+                }
             }
         }
     }
@@ -191,6 +206,7 @@ public class Crawler implements Runnable{
          System.out.println(i);
             threads[i].join();
         }
+        System.out.println("CrawledNum "+crawler.CrawledNum.get());
         System.out.println("Crawling finished1");
         InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());
         System.out.println("Crawling finished2");
