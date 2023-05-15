@@ -70,6 +70,7 @@ public class WebpageParagraphScraper {
         if(end>URLs.size())
             end=URLs.size();
         System.out.println("start: "+start+" end: "+end);
+        int num_removed=0;
         for(int j=start;j<end&&end<=URLs.size();j++) // for every URL
         {
             System.out.println("begiiin");
@@ -137,8 +138,11 @@ public class WebpageParagraphScraper {
             }
             else {
                 System.out.println("removed"+URLs.get(j));
-                end++;
-                Final_URLs.remove(j);
+                end++;  //////// 4elt dy
+//                if(j<0)
+
+                Final_URLs.remove(j-num_removed++);
+//                j--;
                 continue;
             }
             System.out.println("best snippet: "+bestsnippet);

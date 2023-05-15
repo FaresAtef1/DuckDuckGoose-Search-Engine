@@ -16,18 +16,18 @@ public class StopWordsRemover {
         {
             stopWords = new HashSet<String>();
             try {
-                BufferedReader reader= new BufferedReader(new FileReader(filename));
+                BufferedReader reader= new BufferedReader(new FileReader("F:\\Search-Engine\\App\\SearchEngineApp\\src\\main\\java\\stopwordsrm\\StopWords.txt"));
                 String line=reader.readLine();
                 while(line!=null)
                 {
                     stopWords.add(line);
                     line=reader.readLine();
-
                 }
                 reader.close();
             }
             catch(Exception e)
             {
+                System.out.println("cant find");
                 System.err.print(e.getMessage());
             }
         }
@@ -44,6 +44,11 @@ public class StopWordsRemover {
         }
         return String.join(" ", list);
 
+    }
+
+    public static void main (String[] args) {
+        StopWordsRemover swr = new StopWordsRemover("StopWords.txt");
+        System.out.println(swr.RemoveStopWords("I am a student"));
     }
 
 }
