@@ -77,7 +77,7 @@ public class MainApp extends HttpServlet {
         if(!flag)
         {
             if(count%2==0&&count!=0)
-                URLs= PhraseSearching.phraseSearch(query,URLs_Snippets);
+                URLs= PhraseSearching.phraseSearchAndOr(query,URLs_Snippets,count);
             else
                 URLs= queryProcessor.RetrieveResults(query,URLTagIndices);
             flag=true;
@@ -113,9 +113,7 @@ public class MainApp extends HttpServlet {
         }
         //Scrape the paragraphs from the webpages
         if(count%2==0&&count!=0)
-        {
             paragraphs = WebpageParagraphScraper.ScraperPhraseSearch(URLs, query, titles, URLs_Snippets, Integer.parseInt(pagenum));
-        }
         else
             paragraphs = WebpageParagraphScraper.Scraper(URLs, query, titles, URLTagIndices, Integer.parseInt(pagenum));
         //Calculate the time taken to process the query

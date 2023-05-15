@@ -44,38 +44,47 @@ public class PhraseSearching implements Runnable {
 
                 if(wordsIndices.size()>= words.size())
                 {
-//                    Collections.sort(wordsIndices, new Comparator<pair<String, Integer>>() { // sort the words in the tag according to their indices
-//                        @Override
-//                        public int compare(pair<String, Integer> p1, pair<String, Integer> p2) {
-//                            return p1.second.compareTo(p2.second);
-//                        }
-//                    });
+                    Collections.sort(wordsIndices, new Comparator<pair<String, Integer>>() { // sort the words in the tag according to their indices
+                        @Override
+                        public int compare(pair<String, Integer> p1, pair<String, Integer> p2) {
+                            return p1.second.compareTo(p2.second);
+                        }
+                    });
 
                     int lastPosition=-1;
                     int lastWordIndex=-1;
-                    for(int i=0;i<words.size();i++)
+                    int QueryIndex=0;
+                    for(int j=0;j<wordsIndices.size();j++)
                     {
-                        for(int j=0;j<wordsIndices.size();j++)
+                        pair<String,Integer> wordIndex=wordsIndices.get(j);
+                        String word=wordIndex.first;
+                        int index=wordIndex.second;
+//                        System.out.println("URL "+ URL + " tag index "+TatIndex+" and the word is "+word+"  and the word index in the tag "+index);
+                        if(word.equalsIgnoreCase(words.get(QueryIndex)) &&(index-lastWordIndex<10||(lastWordIndex==-1&& QueryIndex==0)))
                         {
-                            // if the word that we are search for is equal to the word in the tag and the distance between that word and the previous  is less than 10
-                            // if lastWordIndex is -1 and  lastPosition is -1 then we are searching for the first word in the phrase
-                            // lastPosition is the index of the previous word in the phrase
-                            // lastWordIndex is used to make sure that we don't skip any word in the phrase
-                            if(words.get(i).equalsIgnoreCase(wordsIndices.get(j).first)&&(wordsIndices.get(j).second-lastPosition<10||lastPosition==-1)&&(i-lastWordIndex==1||lastWordIndex==-1))
+                            QueryIndex++;
+                            lastWordIndex=index;
+                            System.out.println("URL "+ URL + " tag index "+TatIndex+" and the word is "+word+"  and the word index in the tag "+index +" and the query index is "+QueryIndex);
+                            if(QueryIndex==words.size())
                             {
-                                lastPosition=wordsIndices.get(j).second;
-                                lastWordIndex=i;
-                                break;
+                                URLs_Snippets.put(URL,TatIndex);
+                                continue loop;
                             }
-                            // if we found the previous word again
+
                         }
+                        else
+                        {
+                            for(int k=QueryIndex;k>=0;k--)
+                                if(word.equalsIgnoreCase(words.get(k)))
+                                {
+                                    QueryIndex=k;
+                                    lastWordIndex=index;
+                                }
+                        }
+
+
                     }
-                    if(lastWordIndex==words.size()-1) // here we check if the last word in the phrase is found
-                    {
-                        URLs_Snippets.put(URL,TatIndex);
-                        continue loop;
-                        // if the last word is found then we add the URL to the URLs_Snippets map and we break the loop and start searching for the next URL
-                    }
+
                 }
             }
         }
@@ -201,11 +210,62 @@ public class PhraseSearching implements Runnable {
                 .toList();
         return urls;
     }
-    public static void main(String[] args) {
 
-        Scanner scanner=new Scanner(System.in);
-        String input=scanner.nextLine();
+    public static List<String> phraseSearchAndOr(String FullQuery,ConcurrentHashMap<String,Integer> ResultsList,int count)
+    {
+        if(count==2)
+        {
+            String query=FullQuery.substring(1,FullQuery.length()-1);
+            return phraseSearch(query,ResultsList);
+        }
+        int beginIndex=-1;
+        int endIndex=-1;
+        for(int i=1;i<FullQuery.length()&&endIndex==-1;i++)
+        {
+            if(FullQuery.charAt(i)=='"')
+            {
+                if(beginIndex==-1)
+                    beginIndex=i+1;
+                else
+                    endIndex=i-1;
+            }
+        }
+        String firstQuery=FullQuery.substring(1,beginIndex-1);
+        String secondQuery=FullQuery.substring(endIndex+2,FullQuery.length()-1);
+        String op=FullQuery.substring(beginIndex,endIndex+1);
+        ConcurrentHashMap<String,Integer> ResultsList1=new ConcurrentHashMap<>();
+        ConcurrentHashMap<String,Integer> ResultsList2=new ConcurrentHashMap<>();
+        List<String> urls1=phraseSearch(firstQuery,ResultsList1);
+        List<String> urls2=phraseSearch(secondQuery,ResultsList2);
+        Set<String> urls=new HashSet<>();
+        if(op.equalsIgnoreCase("AND"))
+        {
+            for(String url : ResultsList1.keySet())
+            {
+                if(ResultsList2.containsKey(url))
+                {
+                    ResultsList.put(url,ResultsList1.get(url));
+                    urls.add(url);
+                }
+            }
+        }
+        else if(op.equalsIgnoreCase("OR"))
+        {
+            ResultsList.putAll(ResultsList1);
+            ResultsList.putAll(ResultsList2);
+            urls.addAll(ResultsList1.keySet());
+            urls.addAll(ResultsList2.keySet());
+        }
+        return urls.stream().toList();
+    }
+
+    public static void main(String[] args) {
         ConcurrentHashMap<String,Integer> ResultsList=new ConcurrentHashMap<>();
-        List<String> urls=phraseSearch(input,ResultsList);
+        List<String> words=phraseSearchAndOr("\"donald\"and\"trump\"",ResultsList,4);
+        for(String url : ResultsList.keySet()) {
+            System.out.println(url + " " + ResultsList.get(url));
+        }
+
+
     }
 }

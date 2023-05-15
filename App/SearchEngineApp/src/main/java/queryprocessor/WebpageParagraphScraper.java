@@ -81,13 +81,30 @@ public class WebpageParagraphScraper {
 
 
         //highlighting
+        List<String> QueryWords= new ArrayList<>();
+        for(int k=1;k<Query.length()-1;k++)
+        {
+
+            StringBuilder temp= new StringBuilder();
+            while(k<Query.length() && Query.charAt(k)!='"'&&Query.charAt(k)!=' ')
+            {
+                temp.append(Query.charAt(k));
+                k++;
+            }
+            String temp2=temp.toString();
+            if(!temp2.equalsIgnoreCase("and") && !temp2.equalsIgnoreCase("or"))
+                QueryWords.add(temp.toString());
+        }
+        System.out.println(QueryWords);
         for(int j=0;j< paragraphs.size();j++)
         {
             String [] paragraphWords= paragraphs.get(j).split(" ");
             for(int i=0;i< paragraphWords.length;i++)
-                for(String q:Query.substring(1,Query.length()-1).split(" "))
-                    if(paragraphWords[i].toLowerCase().contains(q.toLowerCase()))
+            {
+                for (String q : QueryWords)
+                    if (paragraphWords[i].toLowerCase().contains(q.toLowerCase()))
                         paragraphWords[i] = "<b>" + paragraphWords[i] + "</b>";
+            }
             paragraphs.set(j,String.join(" ",paragraphWords));
         }
         return paragraphs;
