@@ -15,7 +15,7 @@ import structures.pair;
 public class Indexer {
 
     private static final englishStemmer stemmer = new englishStemmer();
-    private static final StopWordsRemover SWRemover = new StopWordsRemover("StopWords.txt");
+    private static final StopWordsRemover SWRemover = new StopWordsRemover("D:\\Search_Engine_F\\App\\SearchEngineApp\\src\\main\\java\\stopwordsrm\\StopWords.txt");
 
 
     public static void main(String[] args) {
@@ -45,10 +45,10 @@ public class Indexer {
         return Leaves;
     }
 
-    public  List<pair<pair<String,Integer>,String>> Normalize(Document doc,String URL)
+    public  List<pair<pair<String,Integer>,pair<String,Integer>>> Normalize(Document doc,String URL)
     {
         List<pair<String,String>> Leaves=GetLeaves(doc);
-        List<pair<pair<String,Integer>,String>> tokens = new LinkedList<>(); //word, index of the tag and tag name
+        List<pair<pair<String,Integer>,pair<String,Integer>>> tokens = new LinkedList<>(); //word, index of the tag and tag name
         Tokenize(Leaves,tokens,URL);
         return tokens;
     }
@@ -63,7 +63,7 @@ public class Indexer {
         return word;
     }
 
-    public  void Tokenize (List<pair<String,String>> elements,List<pair<pair<String,Integer>,String>> tokens,String URL){
+    public  void Tokenize (List<pair<String,String>> elements,List<pair<pair<String,Integer>,pair<String,Integer>>> tokens,String URL){
         List<org.bson.Document> queries = new ArrayList<>();
         String Text;
         for (int i=0;i<elements.size();i++)
@@ -71,11 +71,13 @@ public class Indexer {
             Text=elements.get(i).second;
             queries.add(new org.bson.Document("URL",URL).append("TagIndex", i).append("Text", Text));
             Text=Clean(Text);
+            int j=0;
             for(String word: Text.split("\\s+"))
             {
                 if (!word.matches("[a-z0-9]+"))
                     continue;
-                tokens.add(new pair<>(new pair<>(word,i), elements.get(i).first)); //word, index of the tag and tag name
+                tokens.add(new pair<>(new pair<>(word,i), new pair<> (elements.get(i).first,j))); //word, index of the tag and tag name
+                j++;
             }
         }
         Mongo mongo = new Mongo();
