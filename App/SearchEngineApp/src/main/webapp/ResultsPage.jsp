@@ -28,20 +28,40 @@
 <body>
 <div class="main">
     <header>
+<%--        <style>--%>
+<%--            input{--%>
+<%--                font-family: sans-serif;--%>
+<%--                font-size: 100%;--%>
+<%--                line-height: 1.15;--%>
+<%--                margin: 0;--%>
+<%--            }--%>
+<%--        </style>--%>
         <div class="top_header">
             <a href="index.jsp">
-                <div id="logo"><img src="css/crop.png" alt="logo" style="height: 50px;width: 90px"></div>
+                <div id="logo"><img src="css/logoonly.png" alt="logo" style="height: 50px;width: 50px"></div>
             </a>
             <form action="app-servlet" method="GET" class="searchform">
                 <fieldset>
-                    <div class="inner-form">
-                        <div class="input-field">
-                            <button class="btn-search" type="submit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-                                </svg>
-                            </button>
-                            <input id="search" type="text" value="<%=StringEscapeUtils.escapeHtml4(query)%>" name="query"/>
+                    <div class="inner-form1" style="height: auto; width: auto">
+                        <div class="input-field1" style="border-radius: 10px;">
+<%--                            <button class="btn-search" type="submit">--%>
+<%--                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">--%>
+<%--                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>--%>
+<%--                                </svg>--%>
+<%--                            </button>--%>
+                            <form onsubmit="event.preventDefault();"
+                                  role="search"
+                                  style="position: relative; width: 30rem; background: #57bd84; border-radius: 0.7rem;">
+                                <label for="search" style="position: absolute; clip: rect(1px, 1px, 1px, 1px); padding: 0; border: 0; height: 1px; width: 1px; overflow: hidden;"></label>
+                                <input id="search"
+                                       type="search"
+                                       placeholder="Search..."
+                                       autofocus
+                                       required
+                                       style="outline: 0; background: #fff; padding: 0 1.6rem; border-radius: 0.7rem; appearance: none; transition: all 0.3s cubic-bezier(0, 0, 0.43, 1.49); transition-property: width, border-radius; z-index: 1; position: relative;  font-family: 'Lato', sans-serif; border: 0; color: #2f2f2f; " value="<%=StringEscapeUtils.escapeHtml4(query)%>" name="query">
+<%--                                <button type="submit"--%>
+<%--                                        style="display: none; position: absolute; top: 0; right: 0; width: 6rem; font-weight: bold; background: #57bd84; border-radius: 0 0.7rem 0.7rem 0;"></button>--%>
+                            </form>
                         </div>
                     </div>
                 </fieldset>
@@ -65,11 +85,11 @@
         </div>
     </div>
 </div>
-<div class="pagination">
+<div class="pagination" style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px">
     <% int pageStart = Math.max(currentPage - 5, 1);
         int pageEnd = Math.min(pageStart + 10, totalPages);
-        for (int i = 1; i <= totalPages; i++) { %>
-    <a href="app-servlet?page=<%=i%>&query=<%=encodedQuery%>"><%=i%></a>
+        for (int i = pageStart; i <= pageEnd; i++) { %>
+    <a href="app-servlet?page=<%=i%>&query=<%=encodedQuery%>" style="margin: 0 5px; text-decoration: none; color: #000; background-color: #f1f1f1; padding: 5px 10px; border-radius: 5px;font-family: arial,sans-serif; "><%=i%></a>
     <% } %>
 </div>
 </body>
