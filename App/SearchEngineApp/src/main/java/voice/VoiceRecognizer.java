@@ -19,8 +19,8 @@ public class VoiceRecognizer {
         String dicPath=projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic";
         String lmPath= projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm";
         configuration.setAcousticModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us");
-        configuration.setDictionaryPath("file:///"+"D:\\Search_Engine_F\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic");
-        configuration.setLanguageModelPath("file:///"+"D:\\Search_Engine_F\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm");
+        configuration.setDictionaryPath("file:///"+"A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic");
+        configuration.setLanguageModelPath("file:///"+"A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm");
         try {
             recognizer = new LiveSpeechRecognizer(configuration);
         } catch (IOException e) {

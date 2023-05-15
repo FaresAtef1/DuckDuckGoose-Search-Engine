@@ -11,13 +11,13 @@ public class WebpageParagraphScraper {
     private static  int NUM_OF_THREADS = 5;
 
 
-    private  static void Scrape(int start,int end,List<String>URLs,Map<String,List<Integer>>URLTagsIndices,Mongo mon,List<String> paragraphs,List<String>titles)
+    private  static void Scrape(int start, int end, List<String>URLs, ConcurrentHashMap<String, Set<Integer>> URLTagsIndices, Mongo mon, List<String> paragraphs, List<String>titles)
     {
         for(int j=start;j<end;j++)
         {
             String URL=URLs.get(j);
             HashMap<Integer,Integer>MF=new HashMap<>();
-            List<Integer>Indices=URLTagsIndices.get(URL);
+            Set<Integer>Indices=URLTagsIndices.get(URL);
             for(Integer i:Indices)
             {
                 if(MF.containsKey(i))
@@ -49,7 +49,7 @@ public class WebpageParagraphScraper {
         }
         System.out.println("Thread "+Thread.currentThread().getName()+" Paragraps size "+paragraphs.size()+" Titles size "+titles.size());
     }
-    public static List<String> Scraper(List<String> URLs,String Query,List<String> titles,Map<String,List<Integer>>URLTagsIndices,int pagenum) throws IOException {
+    public static List<String> Scraper(List<String> URLs, String Query, List<String> titles, ConcurrentHashMap<String, Set<Integer>> URLTagsIndices, int pagenum) throws IOException {
         List<String> paragraphs = new ArrayList<>();
         Mongo mon=new Mongo();
         int start=(pagenum-1)*10;

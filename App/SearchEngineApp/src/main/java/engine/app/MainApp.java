@@ -1,12 +1,10 @@
 package engine.app;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import database.Mongo;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import phrase_searching.PhraseSearching;
@@ -87,6 +85,7 @@ public class MainApp extends HttpServlet {
             {
                 if(URLs.size()>0)
                 {
+                    System.out.println(button_type);
                     int index;
                     Random random= new Random();
                     if(URLs.size()>4)

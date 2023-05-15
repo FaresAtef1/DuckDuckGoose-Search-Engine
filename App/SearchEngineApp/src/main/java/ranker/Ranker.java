@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
 public class Ranker {
     private static final double W1= 0.8; //TF_IDF weight
     private static final double W2= 0.2; // PageRank weight
-    private static final double W3= 5;// Exact match weight
-    private static final double W4= 20;// Query word is in the url
+    private static final double W3= 50;// Exact match weight
+    private static final double W4= 100;// Query word is in the url
     private static final double W5= 10;// Query word is in the title
     private static final double W6= 1;// Query word is in the body
 
-    private static final double W7= 2000; //The entire query is in the URL and Nothing else
+    private static final double W7= 20000; //The entire query is in the URL and Nothing else
 
     private static final double[] headingWeights = {2, 1.5, 1.25, 1.125, 1.0625, 1.03125};
 
@@ -94,6 +94,8 @@ public class Ranker {
                         else
                             indices.add(tagindex);
                     }
+                    if(DocURL.equals("https://www.bbc.co.uk/news/world/europe/guernsey") || DocURL.equals("https://www.bbc.com/news/world/europe/guernsey"))
+                        System.out.println("DocURL: "+DocURL+" TF_IDF: "+TF_IDF);
                 }
             }
         }
