@@ -15,7 +15,7 @@ import structures.pair;
 public class InvertedFileBuilder implements Runnable{
     //    private Map<String, Integer> lexicon = new HashMap<>();
     private static ConcurrentHashMap<String, List<pair<String, pair<Double, String>>>> postings = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<pair<String,String>,Set<Integer>> TagIndices = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<pair<String,String>,Set<pair<Integer,Integer>>> TagIndices = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String , Set<String>>  stem= new ConcurrentHashMap<>();
     private static Map<String,Integer> postingRanks = new HashMap<>();
     private static ReentrantLock stemLock = new ReentrantLock();
@@ -45,7 +45,7 @@ public class InvertedFileBuilder implements Runnable{
                 if (title == "")
                     title = url;
                 titlesDocs.add(new org.bson.Document("URL", url).append("Title", title));
-                List<pair<pair<String, Integer>, String>> tokens = indexer.Normalize(doc, url); //word, index of the tag and tag name
+                List<pair<pair<String, Integer>, pair<String,Integer>>> tokens = indexer.Normalize(doc, url); //word, index of the tag and tag name
                 Map<String, pair<Double, String>> WordsCounts = wordCounts(tokens, url, indexer);
                 addToPostings(url, WordsCounts);
             }
@@ -91,7 +91,7 @@ public class InvertedFileBuilder implements Runnable{
                 title=ss;
             queries.add(new org.bson.Document("URL",ss).append("Title",title));
 
-            List<pair<pair<String,Integer>, String>> tokens = indexer.Normalize(temp,ss); //word, index of the tag and tag name
+            List<pair<pair<String,Integer>, pair<String,Integer>>> tokens = indexer.Normalize(temp,ss); //word, index of the tag , tag name and the index of the word in the tag
             //List<pair<Integer, String>> tokensIds = convertTokensToIds(tokens,ss);
             Map<String, pair<Double, String>> WordsCounts = wordCounts(tokens,ss,indexer);
             addToPostings(ss, WordsCounts);
@@ -120,13 +120,13 @@ public class InvertedFileBuilder implements Runnable{
                 for(pair<String, pair<Double, String>> p : postingsList)//for each posting
                 {
                     org.bson.Document temp = new org.bson.Document("DocURL", p.first).append("tf", p.second.first).append("position", p.second.second); // the posting of each actual word
-                    Set<Integer> tags = TagIndices.get(new pair<>(p.first,word));
+                    Set<pair<Integer,Integer>> tags = TagIndices.get(new pair<>(p.first,word));
                     List <org.bson.Document> tagsList = new ArrayList<>();
                     if(tags!=null)
                     {
-                        for (Integer tag : tags)
+                        for (pair<Integer,Integer> tag : tags)
                         {
-                            org.bson.Document temp2 = new org.bson.Document("TagIndex", tag);
+                            org.bson.Document temp2 = new org.bson.Document("TagIndex", tag.first).append("WordIndex", tag.second);
                             tagsList.add(temp2);
                         }
                         temp.append("TagsList", tagsList);
@@ -217,9 +217,9 @@ public class InvertedFileBuilder implements Runnable{
 //        return tokensIDs;
 //    }
 
-    private Map<String, pair<Double, String>> wordCounts(List<pair<pair<String,Integer>, String>> tokens,String URL , Indexer indexer) {
+    private Map<String, pair<Double, String>> wordCounts(List<pair<pair<String,Integer>,pair< String, Integer>>> tokens,String URL , Indexer indexer) {
         Map<String, pair<Double, String>> wordCounts = new HashMap<>(); // word, <tf, position>
-        for (pair<pair<String,Integer>,String> token : tokens)
+        for (pair<pair<String,Integer>,pair<String,Integer>> token : tokens)
         {
             pair<Double, String> wordData= wordCounts.get(token.first.first); //checks if the word was already found in the doc
             if (wordData!=null)
@@ -227,13 +227,13 @@ public class InvertedFileBuilder implements Runnable{
                 wordData.first = wordData.first + 1;
                 if(postingRanks.containsKey(token.second)) // checks if the new tag is included in postingRanks if not ignore it
                     if(postingRanks.get(wordData.second)> postingRanks.get(token.second)) //checks if new tag has less value (higher priority) than the old one if that happens update the tag
-                        wordData.second=token.second;
+                        wordData.second=token.second.first;
             }
             else /// remove after assigning all tags scores
             {
-                wordData = new pair<>(1.0, token.second);// if not it will be added to the Map wordCounts
-                if(!postingRanks.containsKey(token.second)) // if the tag is not included in the postingRanks it will be added with a value of 3
-                    postingRanks.put(token.second, 3);
+                wordData = new pair<>(1.0, token.second.first);// if not it will be added to the Map wordCounts
+                if(!postingRanks.containsKey(token.second.first)) // if the tag is not included in the postingRanks it will be added with a value of 3
+                    postingRanks.put(token.second.first, 3);
             }
             wordCounts.put(token.first.first, wordData);
             // critical area start
@@ -250,14 +250,13 @@ public class InvertedFileBuilder implements Runnable{
                 words.add(token.first.first);
             stemLock.unlock();
             // critical area end
-
-            Set<Integer> indices = TagIndices.get(new pair<>(URL,token.first.first));
+            Set<pair<Integer,Integer>> indices = TagIndices.get(new pair<>(URL,token.first.first)); //key= pair<URL,word> value= set of pairs<tag index, word index inside this tag>
             if(indices!=null)
-                indices.add(token.first.second);
+                indices.add(new pair<>(token.first.second,token.second.second)); // add the new tag index and the word index inside this tag
             else
             {
                 indices = new HashSet<>();
-                indices.add(token.first.second);
+                indices.add(new pair<>(token.first.second,token.second.second));
                 TagIndices.put(new pair<>(URL,token.first.first), indices);
             }
 

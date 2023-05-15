@@ -14,7 +14,8 @@ html {
  */
 body {
     margin: 0;
-    background: #333333;
+    /*background: #333333;*/
+    background: #f2f2f2;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -544,7 +545,9 @@ legend {
     height: 0;
     width: 0;
     border-style: solid;
-    border-color: #333333 transparent transparent transparent;
+    /*border-color: #333333 transparent transparent transparent;*/
+    border-color: white transparent transparent transparent;
+
     border-width: 5px;
     position: absolute;
     right: 11.5px;
@@ -554,7 +557,8 @@ legend {
 }
 
 .choices[data-type*="select-one"].is-open:after {
-    border-color: transparent transparent #333333 transparent;
+    /*border-color: transparent transparent #333333 transparent;*/
+    border-color: transparent transparent white transparent;
     margin-top: -7.5px;
 }
 
