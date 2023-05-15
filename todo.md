@@ -7,8 +7,8 @@
 - [x] Phrase Searching
 - [x] Ranker
 - [x] Web Interface
-- [ ] Bonus
-- [ ] PDF file containing algorithms
+- [x] Bonus
+- [x] PDF file containing algorithms
 - [x] Stem the whole document or just the search query?
 - [x] When do i crawl?
 - [x] how can the crawler be interrupted
@@ -24,5 +24,4 @@
 - [x] Copy the contents before saving
 - [x] Remove inLinks
 - [ ] include phrase searching & fix robots
-- [ ] ads in web interface
-- [ ] phrase searching ranking
+- [x] phrase searching ranking
