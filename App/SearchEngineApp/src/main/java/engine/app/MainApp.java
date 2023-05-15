@@ -22,13 +22,16 @@ public class MainApp extends HttpServlet {
     private  VoiceRecognizer recognizer;
     private List<String> URLs;
     private ConcurrentHashMap<String, Set<Integer>> URLTagIndices;
+
+    private ConcurrentHashMap<String ,Integer> URLs_Snippets;
     private boolean flag; // to prevent calculating the URLs more than once
 //    String prev_query;
 
     public void init() {
-        recognizer = new VoiceRecognizer();
+//        recognizer = new VoiceRecognizer();
         URLs=new ArrayList<>();
         URLTagIndices=new ConcurrentHashMap<>();
+        URLs_Snippets=new ConcurrentHashMap<>();
         flag=false;
 //        prev_query=null;
     }
@@ -37,6 +40,7 @@ public class MainApp extends HttpServlet {
         response.setContentType("text/html");
         //get the query from the user
         String query = request.getParameter("query");
+        System.out.println("query is: "+query);
 //        if()
         System.out.println(query);
         int count = 0;
@@ -62,15 +66,18 @@ public class MainApp extends HttpServlet {
         if(pagenum==null) {
             pagenum = "1";
             flag=false;
+            URLs=new ArrayList<>();
+            URLTagIndices=new ConcurrentHashMap<>();
+            URLs_Snippets=new ConcurrentHashMap<>();
         }
         int StartTime=(int)System.currentTimeMillis();
         //Create a new query processor object
         Query_Processor queryProcessor = new Query_Processor();
 //        ConcurrentHashMap<String, Set<Integer>> URLTagIndices=new ConcurrentHashMap<>();
-        if(true)
+        if(!flag)
         {
             if(count%2==0&&count!=0)
-                URLs= PhraseSearching.phraseSearch(query,URLTagIndices);
+                URLs= PhraseSearching.phraseSearch(query,URLs_Snippets);
             else
                 URLs= queryProcessor.RetrieveResults(query,URLTagIndices);
             flag=true;
@@ -107,10 +114,7 @@ public class MainApp extends HttpServlet {
         //Scrape the paragraphs from the webpages
         if(count%2==0&&count!=0)
         {
-            List<String> temp = new ArrayList<>();
-            paragraphs = WebpageParagraphScraper.ScraperPhraseSearch(URLs, query, titles, URLTagIndices, Integer.parseInt(pagenum),temp);
-            URLs=temp;
-            System.out.println("app "+temp.size());
+            paragraphs = WebpageParagraphScraper.ScraperPhraseSearch(URLs, query, titles, URLs_Snippets, Integer.parseInt(pagenum));
         }
         else
             paragraphs = WebpageParagraphScraper.Scraper(URLs, query, titles, URLTagIndices, Integer.parseInt(pagenum));
