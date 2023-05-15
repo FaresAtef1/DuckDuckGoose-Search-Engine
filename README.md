@@ -11,6 +11,7 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
 ![HTML5](https://img.shields.io/badge/html5-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
 ![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+[![Jakarta EE](https://img.shields.io/badge/Jakarta-EE-orange.svg)](https://jakarta.ee/)
 
 # 📚Libraries
 - [Jsoup](https://jsoup.org/)
