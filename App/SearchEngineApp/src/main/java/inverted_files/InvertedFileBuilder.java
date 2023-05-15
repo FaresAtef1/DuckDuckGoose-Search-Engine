@@ -111,11 +111,8 @@ public class InvertedFileBuilder implements Runnable{
             List<org.bson.Document> postingsListOfEachWord = new ArrayList<>();
             for(String word : stemmedWord.getValue()) //for each actual word
             {
+
                 List<pair<String, pair<Double, String>>> postingsList = postings.get(word); // the posting of each actual word
-                if(postingsList==null) {
-                    System.out.println(word);
-                    continue;
-                }
                 List<org.bson.Document> postingsListOfEachActualWord = new ArrayList<>();
                 for(pair<String, pair<Double, String>> p : postingsList)//for each posting
                 {
@@ -270,10 +267,6 @@ public class InvertedFileBuilder implements Runnable{
     private void addToPostings(String URL, Map<String, pair<Double, String>> wordsCounts) {
         for (Map.Entry<String, pair<Double, String>> record : wordsCounts.entrySet())
         {
-            if(record.getValue().first> 0.05)
-            {
-                record.getValue().first = 0.00000000000000000001;
-            }
             pair<String, pair<Double, String>> New_Posting = new pair<>(URL, new pair<>(record.getValue().first, record.getValue().second));
             // Critical area start
             postingsLock.lock();

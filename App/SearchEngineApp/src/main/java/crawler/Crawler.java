@@ -55,7 +55,6 @@ public class Crawler implements Runnable{
         while(CrawledNum.get()<MAX_VALUE)
         {
             String head=URLsToCrawl.poll();
-
             if(head!=null)
             {
 //                try {
@@ -69,6 +68,7 @@ public class Crawler implements Runnable{
                 outLinks.put(head,new HashSet<>());
                 try
                 {
+
                     Document doc = Jsoup.connect(head).get();
                     String lang=doc.select("html").attr("lang");
                     if(!lang.equals("")&&!lang.contains("en"))
@@ -88,6 +88,9 @@ public class Crawler implements Runnable{
                             if(LinkURL.endsWith(ext))
                                 continue label1;
                         }
+                        if (LinkURL.contains("#")) {
+                            LinkURL = LinkURL.split("#")[0];
+                        }
                         if(LinkURL.endsWith("/")||LinkURL.endsWith("#"))
                         {
                             LinkURL=LinkURL.substring(0,LinkURL.length()-1);
@@ -104,6 +107,7 @@ public class Crawler implements Runnable{
 //                            if(outLinks.get(head)==null)
 //                                 outLinks.put(head,new HashSet<>());
                             outLinks.get(head).add(HashedURL);
+
                             continue;
                         }
                         VisitedURLsContentHash.put(hash,LinkURL);
@@ -122,8 +126,7 @@ public class Crawler implements Runnable{
 //                        dbMan.SaveCrawlerState(URLsToCrawl,outLinks,VisitedURLsContentHash,DisallowedURLs);
 //                        isPaused.set(false);
 //                    }
-                } catch (IOException | InterruptedException ignored) {
-                }
+                } catch (IOException | InterruptedException ignored) {}
             }
         }
     }
@@ -164,7 +167,7 @@ public class Crawler implements Runnable{
             e.printStackTrace(); // Print or handle the exception appropriately
         }
     }
-//
+    //
     private static String getContentHashFromURL(String input) throws InterruptedException, MalformedURLException {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -194,8 +197,8 @@ public class Crawler implements Runnable{
     }
 
     public static void main(String[] args)throws Exception {
-        Crawler crawler =new Crawler("https://www.bbc.com/");
-        Thread[] threads = new Thread[8];
+        Crawler crawler =new Crawler("https://www.bbc.com");
+        Thread[] threads = new Thread[12];
         for (int i = 0; i <8; i++)
         {
             threads[i] = new Thread(crawler);
@@ -203,10 +206,8 @@ public class Crawler implements Runnable{
             threads[i].start();
         }
         for(int i=0;i<8;i++) {
-         System.out.println(i);
             threads[i].join();
         }
-        System.out.println("CrawledNum "+crawler.CrawledNum.get());
         System.out.println("Crawling finished1");
         InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());
         System.out.println("Crawling finished2");

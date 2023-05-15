@@ -12,16 +12,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Ranker {
-    private static final double W1= 0.8; //TF_IDF weight
-    private static final double W2= 0.2; // PageRank weight
-    private static final double W3= 50;// Exact match weight
+    private static final double W1= 0.9; //TF_IDF weight
+    private static final double W2= 0.1; // PageRank weight
+    private static final double W3= 65;// Exact match weight
     private static final double W4= 100;// Query word is in the url
-    private static final double W5= 10;// Query word is in the title
+    private static final double W5= 80;// Query word is in the title
     private static final double W6= 1;// Query word is in the body
 
-    private static final double W7= 20000; //The entire query is in the URL and Nothing else
+    private static final double W7= 1000000; //The entire query is in the URL and Nothing else
 
     private static final double[] headingWeights = {2, 1.5, 1.25, 1.125, 1.0625, 1.03125};
+
+
 
     public static List<String> Rank(List<Document> documents, List<String> originalQuery, ConcurrentHashMap<String,Set<Integer>> URLTagsIndices) {
         Map<String , Double> result=new HashMap<>();
@@ -39,7 +41,15 @@ public class Ranker {
                 for (Document posting : postings)
                 {
                     String DocURL = posting.getString("DocURL");
+
                     double TF = posting.getDouble("tf");
+                    //Scam filter
+                    if(TF>0.1)
+                    {
+                        TF=0.000000001;
+                    }
+                    if( DocURL.equals("https://www.bbc.co.uk/notifications") || DocURL.equals("https://account.bbc.com/account"))
+                        System.out.println("DocURL: "+DocURL+" TF: "+TF+ " IDF: "+IDF);
                     double TF_IDF = (originalQuery.contains(actualWord) ? W3 : W1) * TF * IDF;
                     String Position = posting.getString("position");
                     Pattern pattern = Pattern.compile("^https?://([^/]+)");
@@ -53,7 +63,14 @@ public class Ranker {
                             if (host.toLowerCase().contains(actualWord)) {
                                 if((path.equals("/")||path.isEmpty())&&domain.toLowerCase().equals(actualWord)&&originalQuery.size()==1)
                                 {
+
+                                        System.out.println("URL: "+DocURL);
                                     TF_IDF *= W7;
+                                    System.out.println("TF_IDF: "+TF_IDF);
+                                    if(DocURL.equals("https://www.bbc.co.uk/news/world/europe/guernsey") || DocURL.equals("https://www.bbc.com/news/world/europe/guernsey") || DocURL.equals("https://www.bbc.co.uk/notifications") || DocURL.equals("https://account.bbc.com/account"))
+                                        System.out.println("DocURL: "+DocURL+" TF_IDF: "+TF_IDF);
+
+
                                 }
                                 else
                                 {
@@ -65,6 +82,8 @@ public class Ranker {
                     {
                         continue;
                     }
+                    if(DocURL.equals("https://www.bbc.co.uk/notifications") || DocURL.equals("https://account.bbc.com/account"))
+                        System.out.println("DocURL: "+DocURL+" TF_IDF: "+TF_IDF);
                     switch (Position) {
                         case "title" -> TF_IDF *= W5;
                         case "body" -> TF_IDF *= W6;
@@ -94,10 +113,11 @@ public class Ranker {
                         else
                             indices.add(tagindex);
                     }
-                    if(DocURL.equals("https://www.bbc.co.uk/news/world/europe/guernsey") || DocURL.equals("https://www.bbc.com/news/world/europe/guernsey"))
-                        System.out.println("DocURL: "+DocURL+" TF_IDF: "+TF_IDF);
+//                    if(DocURL.equals("https://www.bbc.co.uk/news/world/europe/guernsey") || DocURL.equals("https://www.bbc.com/news/world/europe/guernsey") || DocURL.equals("https://www.bbc.co.uk/notifications") || DocURL.equals("https://account.bbc.com/account"))
+//                        System.out.println("DocURL: "+DocURL+" TF_IDF: "+TF_IDF);
                 }
             }
+
         }
         Document query=new Document("$or",queries);
         pageRankScores=dbManager.ExecuteQuery(query,"PageRankScores");

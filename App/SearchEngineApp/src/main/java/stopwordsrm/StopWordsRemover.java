@@ -16,7 +16,7 @@ public class StopWordsRemover {
         {
             stopWords = new HashSet<String>();
             try {
-                BufferedReader reader= new BufferedReader(new FileReader("F:\\Search-Engine\\App\\SearchEngineApp\\src\\main\\java\\stopwordsrm\\StopWords.txt"));
+                BufferedReader reader= new BufferedReader(new FileReader(filename));
                 String line=reader.readLine();
                 while(line!=null)
                 {
