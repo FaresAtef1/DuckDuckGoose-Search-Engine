@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 public class Ranker {
     private static final double W1= 0.9; //TF_IDF weight
     private static final double W2= 0.1; // PageRank weight
-    private static final double W3= 65;// Exact match weight
-    private static final double W4= 100;// Query word is in the url
+    private static final double W3= 100;// Exact match weight
+    private static final double W4= 200;// Query word is in the url
     private static final double W5= 80;// Query word is in the title
     private static final double W6= 1;// Query word is in the body
 

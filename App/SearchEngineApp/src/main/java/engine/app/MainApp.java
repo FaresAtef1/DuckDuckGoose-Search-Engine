@@ -26,7 +26,7 @@ public class MainApp extends HttpServlet {
 //    String prev_query;
 
     public void init() {
-//        recognizer = new VoiceRecognizer();
+        recognizer = new VoiceRecognizer();
         URLs=new ArrayList<>();
         URLTagIndices=new ConcurrentHashMap<>();
         URLs_Snippets=new ConcurrentHashMap<>();
