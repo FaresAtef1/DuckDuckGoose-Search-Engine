@@ -33,7 +33,7 @@ public class Crawler implements Runnable{
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
         dbMan=new Mongo();
-      //  dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash);
+        dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash);
         MAX_VALUE=new AtomicInteger(6000);
         if(outLinks.isEmpty())
         {
@@ -67,7 +67,7 @@ public class Crawler implements Runnable{
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
-             //   dbMan.RemoveOneDoc("URLsToCrawl",new org.bson.Document("URL",head));
+                dbMan.RemoveOneDoc("URLsToCrawl",new org.bson.Document("URL",head));
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 try
@@ -106,7 +106,7 @@ public class Crawler implements Runnable{
                         }
                         outLinks.get(head).add(LinkURL);
                         VisitedURLsContentHash.put(hash,LinkURL);
-                      //  dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",hash).append("URL",LinkURL));
+                        dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",hash).append("URL",LinkURL));
 //                        GenerateDisallowedURLs(LinkURL);
                         if(CrawledNum.get()<MAX_VALUE.get()&&LinkURL.startsWith("http")) // HTTP and HTTPs URLS only
                         {
@@ -114,11 +114,11 @@ public class Crawler implements Runnable{
                             if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE.get())
                             {
                                 URLsToCrawl.add(LinkURL);
-                               // dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",LinkURL));
+                                dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",LinkURL));
                             }
                         }
                     }
-                   // dbMan.AddOneDoc("outLinks",new org.bson.Document("URL",head).append("outLinks",outLinks.get(head)));
+                    dbMan.AddOneDoc("outLinks",new org.bson.Document("URL",head).append("outLinks",outLinks.get(head)));
                 } catch (IOException | InterruptedException e) {MAX_VALUE.incrementAndGet();}
             }
         }

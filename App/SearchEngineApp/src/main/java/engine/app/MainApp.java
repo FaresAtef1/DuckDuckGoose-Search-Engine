@@ -59,6 +59,7 @@ public class MainApp extends HttpServlet {
             {
                 //get the query from the user
                 query = recognizer.Recognize();
+                System.out.println("query is: "+query);
             }
         }
         if(pagenum==null) {
@@ -72,6 +73,7 @@ public class MainApp extends HttpServlet {
         //Create a new query processor object
         Query_Processor queryProcessor = new Query_Processor();
 //        ConcurrentHashMap<String, Set<Integer>> URLTagIndices=new ConcurrentHashMap<>();
+        System.out.println("flag is: "+flag);
         if(!flag)
         {
             if(count%2==0&&count!=0)
@@ -85,8 +87,11 @@ public class MainApp extends HttpServlet {
         //check if no results are found
         if(URLs==null)
             URLs= new ArrayList<String>() ;
+        System.out.println("Results are: "+URLs.size());
+
         if(button_type!=null)
         {
+            flag=false;
             //check if the user clicked on the i am feeling lucky button
             if(button_type.equals("lucky"))
             {
@@ -111,11 +116,14 @@ public class MainApp extends HttpServlet {
             }
         }
         //Scrape the paragraphs from the webpages
+        System.out.println("query is: "+query);
         if(count%2==0&&count!=0)
             paragraphs = WebpageParagraphScraper.ScraperPhraseSearch(URLs, query, titles, URLs_Snippets, Integer.parseInt(pagenum));
         else
             paragraphs = WebpageParagraphScraper.Scraper(URLs, query, titles, URLTagIndices, Integer.parseInt(pagenum));
         //Calculate the time taken to process the query
+        System.out.println("paragraphs size is: "+paragraphs.size());
+        System.out.println("titles size is: "+titles.size());
         int EndTime=(int)System.currentTimeMillis();
         float Time= (float) ((EndTime-StartTime)/1000.0);
         //Set the attributes of the session

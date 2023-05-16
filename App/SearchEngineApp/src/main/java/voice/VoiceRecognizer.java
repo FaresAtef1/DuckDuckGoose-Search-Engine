@@ -16,11 +16,11 @@ public class VoiceRecognizer {
         Path projPath= Paths.get(System.getProperty("user.dir")).toAbsolutePath();
         System.out.println(projPath);
         projPath=projPath.getParent();
-        String dicPath=projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic";
-        String lmPath= projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm";
+        String dicPath=projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\5746.dic";
+        String lmPath= projPath.toString()+"\\App\\SearchEngineApp\\src\\main\\java\\voice\\5746.lm";
         configuration.setAcousticModelPath("resource:/edu/cmu/sphinx/models/en-us/en-us");
-        configuration.setDictionaryPath("file:///"+"A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.dic");
-        configuration.setLanguageModelPath("file:///"+"A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\voice\\7503.lm");
+        configuration.setDictionaryPath("file:///"+"A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\voice\\5746.dic");
+        configuration.setLanguageModelPath("file:///"+"A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\voice\\5746.lm");
         try {
             recognizer = new LiveSpeechRecognizer(configuration);
         } catch (IOException e) {
@@ -36,7 +36,7 @@ public class VoiceRecognizer {
     public String Recognize() {
             String query = null;
             try{
-            recognizer.startRecognition(false);
+            recognizer.startRecognition(true);
             System.out.println("Say something");
             SpeechResult result;
             while (query == null || query.equals("")){
@@ -46,9 +46,10 @@ public class VoiceRecognizer {
             System.out.println("You said: " + query + "\n");
         }
         catch (Exception e) {
-            throw new RuntimeException(e);
+                System.out.println("Error: in catch agooga!");
         }
         recognizer.stopRecognition();
+
         return query;
 
     }

@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WebpageParagraphScraper {
 
-    private static  int NUM_OF_THREADS = 1;
+    private static final int NUM_OF_THREADS = 1;
 
 
     private  static void Scrape(int start, int end, List<String>URLs, ConcurrentHashMap<String, Set<Integer>> URLTagsIndices, Mongo mon, List<String> paragraphs, List<String>titles)
@@ -56,18 +56,14 @@ public class WebpageParagraphScraper {
         int end=start+10;
         if(end>URLs.size())
             end=URLs.size();
-        Thread [] threads=new Thread[5];
-        if(end-start<NUM_OF_THREADS)
-            NUM_OF_THREADS=end-start;
+        Thread [] threads=new Thread[NUM_OF_THREADS];
+
         for(int i=0;i<NUM_OF_THREADS;i++)
         {
-            int s=start+(end-start)*i/NUM_OF_THREADS;
+            int s=start;
             int e;
-            if(i==NUM_OF_THREADS-1)
                 e=end;
-            else {
-                e = start + (end - start) * (i + 1) / NUM_OF_THREADS;
-            }
+
             System.out.println("Thread "+i+" start "+s+" end "+e);
             threads[i]=new Thread(()->Scrape(s,e,URLs,URLTagsIndices,mon,paragraphs,titles));
             threads[i].start();
