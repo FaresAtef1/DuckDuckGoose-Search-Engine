@@ -1,2 +1,0 @@
-1- ConcurrentLinkedQueue instead of basic Queue, it is thread-safe and can be safely accessed by multiple threads concurrently without any additional locking or synchronization.
-2- ConcurrentHashMap, it is thread-safe and can be safely accessed by multiple threads concurrently without any additional locking or synchronization.
