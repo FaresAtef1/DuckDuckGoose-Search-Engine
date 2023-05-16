@@ -21,7 +21,6 @@ public class Crawler implements Runnable{
     private ConcurrentLinkedQueue<String> URLsToCrawl;
     private  ConcurrentHashMap<String, Set<String>> outLinks;
     private ConcurrentHashMap<String,String> VisitedURLsContentHash;   // key-> hash , value-> URL
-    private ConcurrentLinkedQueue<String> DisallowedURLs;
     private final List<String> extensions =  Arrays.asList(".gif",".gifv",".mp4",".webm",".mkv",".flv",".vob",".ogv",".ogg",".avi",".mts",".m2ts",".ts",".mov",".qt",".wmv",".yuv",".rm",".rmvb",".asf",".amv",".m4p",".m4v",".mpg",".mp2",".mpeg",".mpe",".mpv",".m2v",".m4v",".svi",".3gp",".3g2",".mxf",".roq",".nsv",".f4v",".png",".jpg",".webp",".tiff",".psd",".raw",".bmp",".heif",".indd",".jp2",".svg",".ai",".eps",".pdf",".ppt");
 
     private static Mongo dbMan ;
@@ -29,12 +28,11 @@ public class Crawler implements Runnable{
 
     public Crawler() throws MalformedURLException, InterruptedException {
         URLsToCrawl = new ConcurrentLinkedQueue<>();
-        DisallowedURLs=new ConcurrentLinkedQueue <>();
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
         dbMan=new Mongo();
         dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash);
-        MAX_VALUE=new AtomicInteger(6000);
+        MAX_VALUE=new AtomicInteger(20);
         if(outLinks.isEmpty())
         {
             AddSeeds("https://www.bbc.com/");
@@ -107,11 +105,12 @@ public class Crawler implements Runnable{
                         outLinks.get(head).add(LinkURL);
                         VisitedURLsContentHash.put(hash,LinkURL);
                         dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",hash).append("URL",LinkURL));
-//                        GenerateDisallowedURLs(LinkURL);
+//                        if(GenerateDisallowedURLs(LinkURL))
+//                            continue;
                         if(CrawledNum.get()<MAX_VALUE.get()&&LinkURL.startsWith("http")) // HTTP and HTTPs URLS only
                         {
                             System.out.println(CrawledNum.get()+" "+head+" Found "+Thread.currentThread().getName()+"  "+LinkURL+" ");
-                            if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE.get())
+                            if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE.get()+1000)
                             {
                                 URLsToCrawl.add(LinkURL);
                                 dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",LinkURL));
@@ -124,25 +123,29 @@ public class Crawler implements Runnable{
         }
     }
 
-    public void GenerateDisallowedURLs(String urlStr) {
+    public boolean GenerateDisallowedURLs(String urlStr) {
+        List<String>DisallowedURLs=new ArrayList<>();
         try {
             URL url = new URL(urlStr);
             String robotsUrl = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
-            try (Scanner scanner = new Scanner(new URL(robotsUrl).openStream())) {
+            Scanner scanner = new Scanner(new URL(robotsUrl).openStream());
+//            {
                 String userAgent = "User-agent: *";
                 boolean matched = false;
                 while (scanner.hasNextLine()) {
                     String line = scanner.nextLine();
                     if (line.startsWith("User-agent"))
                         matched = line.equals(userAgent);
-                    if (matched && line.startsWith("Disallow:")) {
+                    if (matched && line.startsWith("Disallow:"))
+                    {
                         String path = line.substring("Disallow:".length()).trim();
                         if (!path.isEmpty())
                             DisallowedURLs.add(url.getProtocol() + "://" + url.getHost() + path);
                     }
                 }
-            }
+//            }
         } catch (IOException ignored) {}
+        return DisallowedURLs.contains(urlStr);
     }
 
     private static String getContentHashFromURL(String input) throws InterruptedException, MalformedURLException {
@@ -176,6 +179,7 @@ public class Crawler implements Runnable{
         }
         for(int i=0;i<12;i++)
             threads[i].join();
+        System.out.println("Crawling Done");
         Mongo mon=new Mongo();
         mon.DropCollections();
         InvertedFileBuilder builder=new InvertedFileBuilder(crawler.outLinks.keySet());

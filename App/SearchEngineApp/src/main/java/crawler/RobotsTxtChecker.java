@@ -1,15 +1,12 @@
 package crawler;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+
+import java.net.*;
 import java.util.*;
+import java.io.IOException;
 
 public class RobotsTxtChecker {
-    List<String>DisallowedURLs=new ArrayList<>();
-    public void GenerateDisallowedURLs(String urlStr) {
+    public static void GenerateDisallowedURLs(String urlStr) {
+        List<String>DisallowedURLs=new ArrayList<>();
         try {
             URL url = new URL(urlStr);
             String robotsUrl = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
@@ -28,14 +25,13 @@ public class RobotsTxtChecker {
                 }
             }
         } catch (IOException ignored) {}
+        if(DisallowedURLs.contains(urlStr))
+            System.out.println("true");
+        else
+            System.out.println("false");
     }
 
     public static void main (String[] args) throws InterruptedException, MalformedURLException {
-        String url1="https://www.wikipedia.org/";
-//        Set<String> disallowedURLs = GenerateDisAllowedURLs(url1);
-//        if(disallowedURLs.contains("https://www.wikipedia.org/wiki/ויקיפדיה%3Aדפים_ליימים_ומוגנים"))
-//            System.out.println("true");
-//        else
-//            System.out.println("false");
+        GenerateDisallowedURLs("https://www.google.com/jsky?");
     }
 }
