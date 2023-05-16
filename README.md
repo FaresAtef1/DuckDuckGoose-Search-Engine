@@ -17,7 +17,8 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 - [MongoDB Java Driver](https://mongodb.github.io/mongo-java-driver/)
 - [Apache Tomcat](http://tomcat.apache.org/)
 - [Apache Maven](https://maven.apache.org/)
-- [sphinx4](https://cmusphinx.github.io/)
+- [sphinx4-Core-5realalpha](https://jar-download.com/?search_box=sphinx-core)
+- [sphinx4-Data-5realalpha](https://jar-download.com/?search_box=sphinx4-data+jar)
 
 # 🧩Modules
 - [Crawler](https://github.com/FaresAtef1/Search-Engine/tree/voice_lucky_feature/App/SearchEngineApp/src/main/java/crawler)
