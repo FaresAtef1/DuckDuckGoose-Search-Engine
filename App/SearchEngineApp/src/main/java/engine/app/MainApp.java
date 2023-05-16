@@ -20,18 +20,15 @@ public class MainApp extends HttpServlet {
     private  VoiceRecognizer recognizer;
     private List<String> URLs;
     private ConcurrentHashMap<String, Set<Integer>> URLTagIndices;
-
     private ConcurrentHashMap<String ,Integer> URLs_Snippets;
     private boolean flag; // to prevent calculating the URLs more than once
-//    String prev_query;
 
     public void init() {
-//        recognizer = new VoiceRecognizer();
+        recognizer = new VoiceRecognizer();
         URLs=new ArrayList<>();
         URLTagIndices=new ConcurrentHashMap<>();
         URLs_Snippets=new ConcurrentHashMap<>();
         flag=false;
-//        prev_query=null;
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -49,6 +46,7 @@ public class MainApp extends HttpServlet {
         }
         //check the current page number , 1 by default
         String pagenum= request.getParameter("page");
+//        if()
         //check the button type
         String button_type= request.getParameter("button");
 

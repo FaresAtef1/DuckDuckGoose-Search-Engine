@@ -12,7 +12,7 @@ public class DocumentCleaner {
     public static String RemoveSpecialCharacters(String html)
     {
         Pattern pattern = Pattern.compile("(?<=\\s|^)[^a-zA-Z0-9]+(?=\\s|$)|(\\p{Punct})");
-        return pattern.matcher(html).replaceAll("");
+        return pattern.matcher(html).replaceAll(" ");
     }
 
     private DocumentCleaner( ) {

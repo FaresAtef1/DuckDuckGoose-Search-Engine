@@ -28,14 +28,6 @@
 <body>
 <div class="main">
     <header>
-<%--        <style>--%>
-<%--            input{--%>
-<%--                font-family: sans-serif;--%>
-<%--                font-size: 100%;--%>
-<%--                line-height: 1.15;--%>
-<%--                margin: 0;--%>
-<%--            }--%>
-<%--        </style>--%>
         <div class="top_header">
             <a href="index.jsp">
                 <div id="logo"><img src="css/logoonly.png" alt="logo" style="height: 50px;width: 50px"></div>
@@ -44,11 +36,6 @@
                 <fieldset>
                     <div class="inner-form1" style="height: auto; width: auto">
                         <div class="input-field1" style="border-radius: 10px;">
-<%--                            <button class="btn-search" type="submit">--%>
-<%--                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">--%>
-<%--                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>--%>
-<%--                                </svg>--%>
-<%--                            </button>--%>
                             <form onsubmit="event.preventDefault();"
                                   role="search"
                                   style="position: relative; width: 30rem; background: #57bd84; border-radius: 0.7rem;">
@@ -59,8 +46,6 @@
                                        autofocus
                                        required
                                        style="outline: 0; background: #fff; padding: 0 1.6rem; border-radius: 0.7rem; appearance: none; transition: all 0.3s cubic-bezier(0, 0, 0.43, 1.49); transition-property: width, border-radius; z-index: 1; position: relative;  font-family: 'Lato', sans-serif; border: 0; color: #2f2f2f; " value="<%=StringEscapeUtils.escapeHtml4(query)%>" name="query">
-<%--                                <button type="submit"--%>
-<%--                                        style="display: none; position: absolute; top: 0; right: 0; width: 6rem; font-weight: bold; background: #57bd84; border-radius: 0 0.7rem 0.7rem 0;"></button>--%>
                             </form>
                         </div>
                     </div>
@@ -69,7 +54,9 @@
         </div>
     </header>
     <div class="body" style="font-family: arial,sans-serif;">
-        <p>About <%=results.size()%> results (<%=runtime%> seconds)</p>
+        <div style="margin-bottom: 10px">
+            <p>About <%=results.size()%> results (<%=runtime%> seconds)</p>
+        </div>
         <div id="results">
             <% int k=0;
                 for (int i=startIndex;i<endIndex;i++) { %>

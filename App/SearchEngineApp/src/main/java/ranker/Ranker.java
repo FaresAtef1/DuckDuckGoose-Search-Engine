@@ -14,12 +14,12 @@ import java.util.regex.Pattern;
 public class Ranker {
     private static final double W1= 0.9; //TF_IDF weight
     private static final double W2= 0.1; // PageRank weight
-    private static final double W3= 65;// Exact match weight
-    private static final double W4= 100;// Query word is in the url
+    private static final double W3= 100;// Exact match weight
+    private static final double W4= 200;// Query word is in the url
     private static final double W5= 80;// Query word is in the title
     private static final double W6= 1;// Query word is in the body
 
-    private static final double W7= 1000000; //The entire query is in the URL and Nothing else
+    private static final double W7= 1000000.0; //The entire query is in the URL and Nothing else
 
     private static final double[] headingWeights = {2, 1.5, 1.25, 1.125, 1.0625, 1.03125};
 

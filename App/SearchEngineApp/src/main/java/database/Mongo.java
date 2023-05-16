@@ -13,6 +13,7 @@ import javax.print.Doc;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 public class Mongo {
     private static MongoClient mongoClient;
@@ -110,10 +111,10 @@ public class Mongo {
         collection = database.getCollection("outLinks");
         for (Document doc : collection.find()) {
             String URL = doc.getString("URL");
-            Set<String> temp_set = new HashSet<>();
-            for(Document outLink : (List<Document>) doc.get("outLinksOfThisURL"))
-                temp_set.add(outLink.getString("URL"));
-            outLinks.put(URL, temp_set);
+            List<String> results = new ArrayList<>();
+            results=doc.getList("outLinks", String.class);
+            Set<String> set_temp = new HashSet<>(results);
+            outLinks.put(URL, set_temp);
         }
         collection = database.getCollection("VisitedURLsContentHash");
         for (Document doc : collection.find())

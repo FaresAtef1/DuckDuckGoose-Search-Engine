@@ -8,10 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WebpageParagraphScraper {
 
-    private static  int NUM_OF_THREADS = 5;
+    private static  int NUM_OF_THREADS = 1;
 
-
-    private  static void Scrape(int start, int end, List<String>URLs, ConcurrentHashMap<String, Set<Integer>> URLTagsIndices, Mongo mon, List<String> paragraphs, List<String>titles)
+    private  synchronized static void Scrape(int start, int end, List<String>URLs, ConcurrentHashMap<String, Set<Integer>> URLTagsIndices, Mongo mon, List<String> paragraphs, List<String>titles)
     {
         for(int j=start;j<end;j++)
         {

@@ -38,8 +38,8 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 # ©️Developers
 
 
-| Name                 |         Email          |
-|----------------------|:----------------------:|
-| Fares Atef           | faresatef553@gmail.com |
-| Amr Mohammed         | Sheshtawy321@gmail.com |
-| Amr Magdy            |  amr4121999@gmail.com  |
+| Name                    |         Email          |
+|-------------------------|:----------------------:|
+| Fares Atef              | faresatef553@gmail.com |
+| Amr ElSheshtawy         | Sheshtawy321@gmail.com |
+| Amr Magdy               |  amr4121999@gmail.com  |

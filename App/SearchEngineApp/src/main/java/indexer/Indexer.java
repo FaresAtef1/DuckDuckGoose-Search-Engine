@@ -15,7 +15,7 @@ import structures.pair;
 public class Indexer {
 
     private static final englishStemmer stemmer = new englishStemmer();
-    private static final StopWordsRemover SWRemover = new StopWordsRemover("A:\\Engineering\\Y2 Sem.2 Docs\\SearchEngineFinal\\App\\SearchEngineApp\\src\\main\\java\\indexer\\StopWords.txt");
+    private static final StopWordsRemover SWRemover = new StopWordsRemover("F:\\Search-Engine\\App\\SearchEngineApp\\src\\main\\java\\indexer\\StopWords.txt");
 
 
     public static void main(String[] args) {
