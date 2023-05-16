@@ -35,13 +35,12 @@ public class Crawler implements Runnable{
         MAX_VALUE=new AtomicInteger(6000);
         if(outLinks.isEmpty())
         {
-            AddSeeds("https://www.facebook.com");
+            AddSeeds("https://www.bbc.com");
             AddSeeds("https://www.wikipedia.org");
             AddSeeds("https://www.reddit.com");
             AddSeeds("https://www.nytimes.com");
             AddSeeds("https://www.amazon.com");
             AddSeeds("https://www.imdb.com");
-            AddSeeds("https://www.github.com");
             AddSeeds("https://www.stackoverflow.com");
             AddSeeds("https://www.twitter.com");
             AddSeeds("https://www.medium.com");
@@ -53,8 +52,8 @@ public class Crawler implements Runnable{
         this.URLsToCrawl.add(URL);
         String Hash=getContentHashFromURL(URL);
         this.VisitedURLsContentHash.put(Hash,URL);
-//        dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",Hash).append("URL",URL));
-//        dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",URL));
+        dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",Hash).append("URL",URL));
+        dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",URL));
     }
 
     public void run() {
@@ -129,7 +128,6 @@ public class Crawler implements Runnable{
             URL url = new URL(urlStr);
             String robotsUrl = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
             Scanner scanner = new Scanner(new URL(robotsUrl).openStream());
-//            {
             String userAgent = "User-agent: *";
             boolean matched = false;
             while (scanner.hasNextLine()) {
@@ -143,7 +141,6 @@ public class Crawler implements Runnable{
                         DisallowedURLs.add(url.getProtocol() + "://" + url.getHost() + path);
                 }
             }
-//            }
         } catch (IOException ignored) {}
         return DisallowedURLs.contains(urlStr);
     }
@@ -170,14 +167,14 @@ public class Crawler implements Runnable{
 
     public static void main(String[] args)throws Exception {
         Crawler crawler =new Crawler();
-        Thread[] threads = new Thread[12];
-        for (int i = 0; i <12; i++)
+        Thread[] threads = new Thread[9];
+        for (int i = 0; i <9; i++)
         {
             threads[i] = new Thread(crawler);
             threads[i].setName(String.valueOf(i));
             threads[i].start();
         }
-        for(int i=0;i<12;i++)
+        for(int i=0;i<9;i++)
             threads[i].join();
         Mongo mon=new Mongo();
         mon.DropCollections();
