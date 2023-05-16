@@ -211,7 +211,7 @@ public class Crawler implements Runnable{
     }
 
     public static void main(String[] args)throws Exception {
-        Crawler crawler =new Crawler("https://www.bbc.com");
+        Crawler crawler =new Crawler();
         Thread[] threads = new Thread[12];
         for (int i = 0; i <8; i++)
         {
