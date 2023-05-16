@@ -35,6 +35,7 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 
 
 #Search by Text
+
 https://github.com/FaresAtef1/Search-Engine/assets/96792115/f0160b70-9e7c-41c7-a432-e4cadc18d685
 
 
