@@ -34,35 +34,47 @@ public class Crawler implements Runnable{
     private static Mongo dbMan ;
     final int MAX_VALUE = 6000;
 
-    private static final int StateSize = 25;
-
-    public Crawler(String BaseUrl) throws MalformedURLException, InterruptedException {
-        isPaused=new AtomicBoolean(false); // initially crawler is not paused
+    public Crawler() throws MalformedURLException, InterruptedException {
         CrawledNum=new AtomicInteger(0);
-        this.BaseURL = BaseUrl;
         URLsToCrawl = new ConcurrentLinkedQueue<>();
         DisallowedURLs=new ConcurrentLinkedQueue <>();
         outLinks =new ConcurrentHashMap <>();
         VisitedURLsContentHash=new ConcurrentHashMap <>();
-        URLsToCrawl.add(BaseURL);
-        String Hash=getContentHashFromURL(BaseURL);
-        VisitedURLsContentHash.put(Hash,BaseUrl);
         dbMan=new Mongo();
+        dbMan.LoadPrevState(URLsToCrawl,outLinks,VisitedURLsContentHash);
+        if(outLinks.isEmpty())
+        {
+            AddSeeds("https://www.bbc.com/");
+            AddSeeds("https://www.wikipedia.org");
+            AddSeeds("https://www.reddit.com");
+            AddSeeds("https://www.nytimes.com");
+            AddSeeds("https://www.amazon.com");
+            AddSeeds("https://www.imdb.com");
+            AddSeeds("https://www.github.com");
+            AddSeeds("https://www.stackoverflow.com");
+            AddSeeds("https://www.twitter.com");
+            AddSeeds("https://www.youtube.com");
+            AddSeeds("https://www.medium.com");
+        }
     }
 
+    public void AddSeeds(String URL) throws MalformedURLException, InterruptedException {
+        this.URLsToCrawl.add(URL);
+        String Hash=getContentHashFromURL(URL);
+        this.VisitedURLsContentHash.put(Hash,URL);
+        dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",Hash).append("URL",URL));
+        dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",URL));
+    }
 
     public void run() {
         while(CrawledNum.get()<MAX_VALUE)
         {
+            if(CrawledNum.get()>=MAX_VALUE)
+                return;
             String head=URLsToCrawl.poll();
             if(head!=null)
             {
-//                try {
-////                    checkIfInterrupted();
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-
+                dbMan.RemoveOneDoc("URLsToCrawl",new org.bson.Document("URL",head));
                 CrawledNum.incrementAndGet();
                 System.out.println(CrawledNum+" "+Thread.currentThread().getName()+"  "+head+" ");
                 outLinks.put(head,new HashSet<>());
@@ -111,12 +123,16 @@ public class Crawler implements Runnable{
                             continue;
                         }
                         VisitedURLsContentHash.put(hash,LinkURL);
+                        dbMan.AddOneDoc("VisitedURLsContentHash",new org.bson.Document("Hash",hash).append("URL",LinkURL));
 //                        GenerateDisallowedURLs(LinkURL);
                         if(CrawledNum.get()<MAX_VALUE&&LinkURL.startsWith("http")&&(!DisallowedURLs.contains(LinkURL))) // HTTP and HTTPs URLS only
                         {
                             System.out.println(CrawledNum.get()+" "+head+" Found "+Thread.currentThread().getName()+"  "+LinkURL+" ");
                             if(CrawledNum.get()+URLsToCrawl.size()<MAX_VALUE)
+                            {
                                 URLsToCrawl.add(LinkURL);
+                                dbMan.AddOneDoc("URLsToCrawl",new org.bson.Document("URL",LinkURL));
+                            }
                         }
                     }
 
@@ -163,11 +179,9 @@ public class Crawler implements Runnable{
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace(); // Print or handle the exception appropriately
-        }
+        } catch (IOException ignored) {}
     }
-    //
+//
     private static String getContentHashFromURL(String input) throws InterruptedException, MalformedURLException {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");

@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Mongo {
-    private  MongoClientURI mongoClientURI;
     private static MongoClient mongoClient;
     private static MongoDatabase database;
 
@@ -40,13 +39,10 @@ public class Mongo {
         database.createCollection("URLsToCrawl");
         database.createCollection("outLinks");
         database.createCollection("VisitedURLsContentHash");
-        database.createCollection("DisallowedURLs");
         database.createCollection("PageRankScores");
         database.createCollection("Indexer");
         database.createCollection("Snippets");
         database.createCollection("Titles");
-//        database.createCollection("SearchHistory");
-//        database.createCollection("Snippets");
     }
 
     public void DropCollections()
@@ -57,8 +53,6 @@ public class Mongo {
         collection.drop();
         collection=database.getCollection("VisitedURLsContentHash");
         collection.drop();
-        collection=database.getCollection("DisallowedURLs");
-        collection.drop();
         collection=database.getCollection("PageRankScores");
         collection.drop();
         collection=database.getCollection("Indexer");
@@ -67,10 +61,6 @@ public class Mongo {
         collection.drop();
         collection=database.getCollection("Titles");
         collection.drop();
-//        collection=database.getCollection("SearchHistory");
-//        collection.drop();
-//        collection=database.getCollection("Snippets");
-//        collection.drop();
     }
 
     public void SaveCrawlerState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks, ConcurrentHashMap<String,String> VisitedURLsContentHash , ConcurrentLinkedQueue<String> DisallowedURLs)
@@ -109,42 +99,25 @@ public class Mongo {
         }
         if(Documents4.size() > 0)
             collection.insertMany(Documents4);
-
-//        collection = database.getCollection("DisallowedURLs");
-//        collection.drop();
-//        List<org.bson.Document> Documents5 = new ArrayList<>();
-//        for (String s : DisallowedURLs)
-//        {
-//            Document temp_doc = new Document("URL", s);
-//            Documents5.add(temp_doc);
-//        }
-//        if(Documents5.size() > 0)
-//          collection.insertMany(Documents5);
     }
 
 
-    public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks ,ConcurrentHashMap<String,String> VisitedURLsContentHash ,ConcurrentLinkedQueue<String> DisallowedURLs)
+    public void LoadPrevState(ConcurrentLinkedQueue<String> URLsToCrawl,ConcurrentHashMap<String,Set<String>> outLinks ,ConcurrentHashMap<String,String> VisitedURLsContentHash)
     {
         MongoCollection<org.bson.Document> collection = database.getCollection("URLsToCrawl");
         for (Document doc : collection.find())
             URLsToCrawl.add(doc.getString("URL"));
-        /////////////////////////////////////////////////////////edited by amr
         collection = database.getCollection("outLinks");
         for (Document doc : collection.find()) {
             String URL = doc.getString("URL");
             Set<String> temp_set = new HashSet<>();
-            for(Document outLink : (List<Document>) doc.get("outLinksOfThisURL"))////////is this correct?
+            for(Document outLink : (List<Document>) doc.get("outLinksOfThisURL"))
                 temp_set.add(outLink.getString("URL"));
             outLinks.put(URL, temp_set);
         }
-
         collection = database.getCollection("VisitedURLsContentHash");
         for (Document doc : collection.find())
             VisitedURLsContentHash.put(doc.getString("Hash") , doc.getString("URL"));
-
-        collection = database.getCollection("DisallowedURLs");
-        for (Document doc : collection.find())
-            DisallowedURLs.add(doc.getString("URL"));
     }
 
     public List<Document> ExecuteQuery(Document query, String collectionName)
@@ -162,45 +135,38 @@ public class Mongo {
         return results;
     }
 
-    public void mongotest()
-    {
-
-        loop1:for(int i=0;i<10;i++)
-        {
-            for(int j=0;j<10;j++) {
-                if (j == 2)
-                    continue loop1;
-                System.out.println(i + " "+j );
-            }
-        }
-    }
     public void updateCollection(String collectionName , List<Document> documents)
     {
-        if(isConnectionEstablished == false)
+        if(!isConnectionEstablished)
             ConnectToMongo();
         MongoCollection<Document> collection = database.getCollection(collectionName);
         List<InsertOneModel<Document>> insertOps = new ArrayList<>();
         for (Document document : documents) {
             insertOps.add(new InsertOneModel<>(document));
         }
-
-// create bulk write request
         BulkWriteOptions options = new BulkWriteOptions().ordered(false);
         BulkWriteResult result = collection.bulkWrite(insertOps, options);
     }
     public void AddToCollection(String collectionName , List<Document> documents)
     {
-        if(isConnectionEstablished == false)
+        if(!isConnectionEstablished)
             ConnectToMongo();
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertMany(documents);
     }
     public void AddOneDoc(String collectionName , Document doc)
     {
-        if(isConnectionEstablished == false)
+        if(!isConnectionEstablished)
             ConnectToMongo();
         MongoCollection<Document> collection = database.getCollection(collectionName);
         collection.insertOne(doc);
+    }
+    public void RemoveOneDoc(String collectionName , Document doc)
+    {
+        if(!isConnectionEstablished)
+            ConnectToMongo();
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.deleteOne(doc);
     }
     public void ConnectToMongo()
     {
@@ -220,6 +186,5 @@ public class Mongo {
         Mongo mon=new Mongo();
         mon.DropCollections();
         mon.CreateCollections();
-
     }
 }

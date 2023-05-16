@@ -141,5 +141,4 @@ public class WebpageParagraphScraper {
         }
         return paragraphs;
     }
-
 }

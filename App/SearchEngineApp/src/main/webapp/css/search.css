@@ -2,6 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    border-radius: 10px;
 }
 body {
     font-family: Georgia, 'Times New Roman', Times, serif;
@@ -46,6 +47,7 @@ header {
 .top_header img {
     width: 110px;
     margin-right: 50px;
+    margin-left: 20px;
 }
 
 #search_bar {
@@ -133,7 +135,7 @@ header {
 
 .body {
     width: 100%;
-    margin-top: 130px;
+    margin-top: 100px;
     padding-left: 190px;
     padding-right: 450px;
 }
