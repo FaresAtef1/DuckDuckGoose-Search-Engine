@@ -78,7 +78,6 @@ public class Crawler implements Runnable{
                     }
                     outLinks.put(head,new HashSet<>());
                     Elements links = doc.select("a[href]");
-                    System.out.println(links.size());
                     label1:
                     for(Element link:links)
                     {
@@ -129,7 +128,6 @@ public class Crawler implements Runnable{
             URL url = new URL(urlStr);
             String robotsUrl = url.getProtocol() + "://" + url.getHost() + "/robots.txt";
             Scanner scanner = new Scanner(new URL(robotsUrl).openStream());
-//            {
                 String userAgent = "User-agent: *";
                 boolean matched = false;
                 while (scanner.hasNextLine()) {
@@ -143,7 +141,6 @@ public class Crawler implements Runnable{
                             DisallowedURLs.add(url.getProtocol() + "://" + url.getHost() + path);
                     }
                 }
-//            }
         } catch (IOException ignored) {}
         return DisallowedURLs.contains(urlStr);
     }
