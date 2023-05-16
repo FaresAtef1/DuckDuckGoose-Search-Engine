@@ -34,9 +34,17 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 - [Stop Words Remover](https://github.com/FaresAtef1/Search-Engine/tree/voice_lucky_feature/App/SearchEngineApp/src/main/java/stopwordsrm)
 
 
-#Search by Text
+# 🔍Search by Text
 
 https://github.com/FaresAtef1/Search-Engine/assets/96792115/f0160b70-9e7c-41c7-a432-e4cadc18d685
+
+
+# 🎤Search by Voice
+https://github.com/FaresAtef1/Search-Engine/assets/96792115/f7a981e6-e9f7-4999-88f2-34a7dfb7e55b
+
+
+# ☘️Lucky Feature
+https://github.com/FaresAtef1/Search-Engine/assets/96792115/024f97ec-54db-41d3-90bd-f5184547a02b
 
 
 
