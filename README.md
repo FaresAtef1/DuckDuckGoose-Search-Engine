@@ -35,16 +35,18 @@ features of a search engine (web crawling, indexing and ranking) and the interac
 
 
 # 🔍Search by Text
-https://github.com/FaresAtef1/DuckDuckGoose-Search-Engine/assets/96792115/b80afce8-97e6-4ce5-b511-ea99319ed018
 
+https://github.com/FaresAtef1/DuckDuckGoose-Search-Engine/assets/96792115/3baab860-6981-4e90-afd5-a66a196b701c
 
 
 # 🎤Search by Voice
-https://github.com/FaresAtef1/DuckDuckGoose-Search-Engine/assets/96792115/f7a981e6-e9f7-4999-88f2-34a7dfb7e55b
+
+https://github.com/FaresAtef1/DuckDuckGoose-Search-Engine/assets/96792115/5776efae-d3cc-45f7-a5e4-e96c41676bd3
 
 
 # ☘️Lucky Feature
-https://github.com/FaresAtef1/DuckDuckGoose-Search-Engine/assets/96792115/024f97ec-54db-41d3-90bd-f5184547a02b
+
+https://github.com/FaresAtef1/DuckDuckGoose-Search-Engine/assets/96792115/54909fdd-d222-4f96-9578-53b3c40936b1
 
 
 
