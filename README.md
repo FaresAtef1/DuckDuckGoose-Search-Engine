@@ -54,5 +54,5 @@ https://github.com/FaresAtef1/Search-Engine/assets/96792115/024f97ec-54db-41d3-9
 | Name                 |         Email          |
 |----------------------|:----------------------:|
 | Fares Atef           | faresatef553@gmail.com |
-| Amr Mohammed         | Sheshtawy321@gmail.com |
+| Amr ElSheshtawy      | Sheshtawy321@gmail.com |
 | Amr Magdy            |  amr4121999@gmail.com  |
